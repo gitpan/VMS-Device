@@ -15,7 +15,7 @@ require AutoLoader;
 @EXPORT_OK = qw(&device_types &device_classes &device_list &device_info
                 &decode_device_bitmap &device_info_item &mount &dismount
                 &allocate &deallocate &initialize);
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 bootstrap VMS::Device $VERSION;
 
@@ -42,8 +42,8 @@ VMS::Device - Perl extension for blah blah blah
   $Value = device_info_item($DevName, $ItemName); [Unimplemented]
   $Status = mount($DevName[, \%Device_properties]); [Unimplemented]
   $Status = dismount($DevName[, \%Dismount_flags]); [Unimplemented]
-  $DeviceAllocated = allocate($DevName[, $FirstAvail[, $AccMode]]) [Unimplemented]
-  $Status = deallocate($DevName[, $AccMode]); [Unimplemented]
+  $DeviceAllocated = allocate($DevName[, $FirstAvail[, $AccMode]]);
+  $Status = deallocate($DevName[, $AccMode]);
   $Status = initialize($DevName[, $VolumeName[, \%DevProperties]]) [Unimplemented]
 
 =head1 DESCRIPTION
@@ -95,8 +95,8 @@ asked about.
 
 =item mount
 
-C<mount> takes a reference to a hash with the parameters for the mount, and
-attempts to mount the device.
+C<mount> takes a device name and a reference to a hash with the parameters
+for the mount, and attempts to mount the device.
 
 =item dismount
 
@@ -154,7 +154,7 @@ devices:
       $TotalFreeBlocks += device_info($devname)->{FREEBLOCKS};
     }
 
-    print "Total free is $TotalBlocks\n";
+    print "Total free is $TotalFreeBlocks\n";
 
 
 here's one that prints out the disk with the largest amount of free space:

@@ -13,6 +13,7 @@ extern "C" {
 #include <ucbdef.h>
 #include <dcdef.h>
 #include <dvsdef.h>
+#include <psldef.h>
   
 #include "EXTERN.h"
 #include "perl.h"
@@ -61,6 +62,7 @@ typedef struct {char  *ItemName;         /* Name of the item we're getting */
     hv_store(a, #b, strlen(#b), &sv_no, 0);}   
 
 #define DVI_ENT(a, b, c) {#a, DVI$_##a, b, c}
+#define MNT_ENT
 #define DC_ENT(a) {#a, DC$_##a}
 #define DT_ENT(a) {#a, DT$_##a}
 
@@ -80,6 +82,7 @@ typedef struct {char  *ItemName;         /* Name of the item we're getting */
 #define IS_BITMAP 7   /* Each bit in the return value indicates something */
 #define IS_ENUM 8     /* Each returned value has a name, and we ought to */
                       /* return the name instead of the value */
+#define IS_ODD 9      /* A catchall */
 
 #define FOR_DISK     (1<<0)
 #define FOR_TAPE     (1<<1)
@@ -102,21 +105,96 @@ struct DevClassID {
 /* These were all hand-generated (with help from emacs' replace-regex) */
 struct DevClassID DevClassList[] =
 {
+#ifdef DC$_DISK
   DC_ENT(DISK),
+#endif
+#ifdef DC$_TAPE
   DC_ENT(TAPE),
+#endif
+#ifdef DC$_SCOM
   DC_ENT(SCOM),
+#endif
+#ifdef DC$_CARD
   DC_ENT(CARD),
+#endif
+#ifdef DC$_TERM
   DC_ENT(TERM),
+#endif
+#ifdef DC$_LP
   DC_ENT(LP),
+#endif
+#ifdef DC$_WORKSTATION
   DC_ENT(WORKSTATION),
+#endif
+#ifdef DC$_REALTIME
   DC_ENT(REALTIME),
+#endif
+#ifdef DC$_DECVOICE
   DC_ENT(DECVOICE),
+#endif
+#ifdef DC$_AUDIO
   DC_ENT(AUDIO),
+#endif
+#ifdef DC$_VIDEO
   DC_ENT(VIDEO),
+#endif
+#ifdef DC$_BUS
   DC_ENT(BUS),
+#endif
+#ifdef DC$_MAILBOX
   DC_ENT(MAILBOX),
+#endif
+#ifdef DC$_REMCSL_STORAGE
   DC_ENT(REMCSL_STORAGE),
+#endif
+#ifdef DC$_MISC
   DC_ENT(MISC),
+#endif
+#ifdef DC$_DISK
+  DC_ENT(DISK),
+#endif
+#ifdef DC$_TAPE
+  DC_ENT(TAPE),
+#endif
+#ifdef DC$_SCOM
+  DC_ENT(SCOM),
+#endif
+#ifdef DC$_CARD
+  DC_ENT(CARD),
+#endif
+#ifdef DC$_TERM
+  DC_ENT(TERM),
+#endif
+#ifdef DC$_LP
+  DC_ENT(LP),
+#endif
+#ifdef DC$_WORKSTATION
+  DC_ENT(WORKSTATION),
+#endif
+#ifdef DC$_REALTIME
+  DC_ENT(REALTIME),
+#endif
+#ifdef DC$_DECVOICE
+  DC_ENT(DECVOICE),
+#endif
+#ifdef DC$_AUDIO
+  DC_ENT(AUDIO),
+#endif
+#ifdef DC$_VIDEO
+  DC_ENT(VIDEO),
+#endif
+#ifdef DC$_BUS
+  DC_ENT(BUS),
+#endif
+#ifdef DC$_MAILBOX
+  DC_ENT(MAILBOX),
+#endif
+#ifdef DC$_REMCSL_STORAGE
+  DC_ENT(REMCSL_STORAGE),
+#endif
+#ifdef DC$_MISC
+  DC_ENT(MISC),
+#endif
   {NULL, 0}
 };
 
@@ -128,514 +206,1447 @@ struct DevTypeID {
 /* These were all hand-generated (with help from emacs' replace-regex) */
 struct DevTypeID DevTypeList[] =
 {
-  DT_ENT(RK06),
-  DT_ENT(RK07),
-  DT_ENT(RP04),
-  DT_ENT(RP05),
-  DT_ENT(RP06),
-  DT_ENT(RM03),
-  DT_ENT(RP07),
-  DT_ENT(RP07HT),
-  DT_ENT(RL01),
-  DT_ENT(RL02),
-  DT_ENT(RX02),
-  DT_ENT(RX04),
-  DT_ENT(RM80),
-  DT_ENT(TU58),
-  DT_ENT(RM05),
-  DT_ENT(RX01),
-  DT_ENT(ML11),
-  DT_ENT(RB02),
-  DT_ENT(RB80),
+#ifdef DT$_RA80
   DT_ENT(RA80),
+#endif
+#ifdef DT$_RA81
   DT_ENT(RA81),
+#endif
+#ifdef DT$_RA60
   DT_ENT(RA60),
+#endif
+#ifdef DT$_RZ01
   DT_ENT(RZ01),
+#endif
+#ifdef DT$_RC25
   DT_ENT(RC25),
+#endif
+#ifdef DT$_RZF01
   DT_ENT(RZF01),
+#endif
+#ifdef DT$_RCF25
   DT_ENT(RCF25),
+#endif
+#ifdef DT$_RD51
   DT_ENT(RD51),
+#endif
+#ifdef DT$_RX50
   DT_ENT(RX50),
+#endif
+#ifdef DT$_RD52
   DT_ENT(RD52),
+#endif
+#ifdef DT$_RD53
   DT_ENT(RD53),
+#endif
+#ifdef DT$_RD26
   DT_ENT(RD26),
+#endif
+#ifdef DT$_RA82
   DT_ENT(RA82),
+#endif
+#ifdef DT$_RD31
   DT_ENT(RD31),
+#endif
+#ifdef DT$_RD54
   DT_ENT(RD54),
+#endif
+#ifdef DT$_CRX50
   DT_ENT(CRX50),
+#endif
+#ifdef DT$_RRD50
   DT_ENT(RRD50),
+#endif
+#ifdef DT$_GENERIC_DU
   DT_ENT(GENERIC_DU),
+#endif
+#ifdef DT$_RX33
   DT_ENT(RX33),
+#endif
+#ifdef DT$_RX18
   DT_ENT(RX18),
+#endif
+#ifdef DT$_RA70
   DT_ENT(RA70),
+#endif
+#ifdef DT$_RA90
   DT_ENT(RA90),
+#endif
+#ifdef DT$_RD32
   DT_ENT(RD32),
+#endif
+#ifdef DT$_DISK9
   DT_ENT(DISK9),
+#endif
+#ifdef DT$_RX35
   DT_ENT(RX35),
+#endif
+#ifdef DT$_RF30
   DT_ENT(RF30),
+#endif
+#ifdef DT$_RF70
   DT_ENT(RF70),
+#endif
+#ifdef DT$_RF71
   DT_ENT(RF71),
+#endif
+#ifdef DT$_RD33
   DT_ENT(RD33),
+#endif
+#ifdef DT$_ESE20
   DT_ENT(ESE20),
+#endif
+#ifdef DT$_TU56
   DT_ENT(TU56),
+#endif
+#ifdef DT$_RZ22
   DT_ENT(RZ22),
+#endif
+#ifdef DT$_RZ23
   DT_ENT(RZ23),
+#endif
+#ifdef DT$_RZ24
   DT_ENT(RZ24),
+#endif
+#ifdef DT$_RZ55
   DT_ENT(RZ55),
+#endif
+#ifdef DT$_RRD40S
   DT_ENT(RRD40S),
+#endif
+#ifdef DT$_RRD40
   DT_ENT(RRD40),
+#endif
+#ifdef DT$_GENERIC_DK
   DT_ENT(GENERIC_DK),
+#endif
+#ifdef DT$_RX23
   DT_ENT(RX23),
+#endif
+#ifdef DT$_RF31
   DT_ENT(RF31),
+#endif
+#ifdef DT$_RF72
   DT_ENT(RF72),
+#endif
+#ifdef DT$_RAM_DISK
   DT_ENT(RAM_DISK),
+#endif
+#ifdef DT$_RZ25
   DT_ENT(RZ25),
+#endif
+#ifdef DT$_RZ56
   DT_ENT(RZ56),
+#endif
+#ifdef DT$_RZ57
   DT_ENT(RZ57),
+#endif
+#ifdef DT$_RX23S
   DT_ENT(RX23S),
+#endif
+#ifdef DT$_RX33S
   DT_ENT(RX33S),
+#endif
+#ifdef DT$_RA92
   DT_ENT(RA92),
+#endif
+#ifdef DT$_SSTRIPE
   DT_ENT(SSTRIPE),
+#endif
+#ifdef DT$_RZ23L
   DT_ENT(RZ23L),
+#endif
+#ifdef DT$_RX26
   DT_ENT(RX26),
+#endif
+#ifdef DT$_RZ57I
   DT_ENT(RZ57I),
+#endif
+#ifdef DT$_RZ31
   DT_ENT(RZ31),
+#endif
+#ifdef DT$_RZ58
   DT_ENT(RZ58),
+#endif
+#ifdef DT$_SCSI_MO
   DT_ENT(SCSI_MO),
+#endif
+#ifdef DT$_RWZ01
   DT_ENT(RWZ01),
+#endif
+#ifdef DT$_RRD42
   DT_ENT(RRD42),
+#endif
+#ifdef DT$_CD_LOADER_1
   DT_ENT(CD_LOADER_1),
+#endif
+#ifdef DT$_ESE25
   DT_ENT(ESE25),
+#endif
+#ifdef DT$_RFH31
   DT_ENT(RFH31),
+#endif
+#ifdef DT$_RFH72
   DT_ENT(RFH72),
+#endif
+#ifdef DT$_RF73
   DT_ENT(RF73),
+#endif
+#ifdef DT$_RFH73
   DT_ENT(RFH73),
+#endif
+#ifdef DT$_RA72
   DT_ENT(RA72),
+#endif
+#ifdef DT$_RA71
   DT_ENT(RA71),
+#endif
+#ifdef DT$_RAH72
   DT_ENT(RAH72),
+#endif
+#ifdef DT$_RF32
   DT_ENT(RF32),
+#endif
+#ifdef DT$_RF35
   DT_ENT(RF35),
+#endif
+#ifdef DT$_RFH32
   DT_ENT(RFH32),
+#endif
+#ifdef DT$_RFH35
   DT_ENT(RFH35),
+#endif
+#ifdef DT$_RFF31
   DT_ENT(RFF31),
+#endif
+#ifdef DT$_RF31F
   DT_ENT(RF31F),
+#endif
+#ifdef DT$_RZ72
   DT_ENT(RZ72),
+#endif
+#ifdef DT$_RZ73
   DT_ENT(RZ73),
+#endif
+#ifdef DT$_RZ35
   DT_ENT(RZ35),
+#endif
+#ifdef DT$_RZ24L
   DT_ENT(RZ24L),
+#endif
+#ifdef DT$_RZ25L
   DT_ENT(RZ25L),
+#endif
+#ifdef DT$_RZ55L
   DT_ENT(RZ55L),
+#endif
+#ifdef DT$_RZ56L
   DT_ENT(RZ56L),
+#endif
+#ifdef DT$_RZ57L
   DT_ENT(RZ57L),
+#endif
+#ifdef DT$_RA73
   DT_ENT(RA73),
+#endif
+#ifdef DT$_RZ26
   DT_ENT(RZ26),
+#endif
+#ifdef DT$_RZ36
   DT_ENT(RZ36),
+#endif
+#ifdef DT$_RZ74
   DT_ENT(RZ74),
+#endif
+#ifdef DT$_ESE52
   DT_ENT(ESE52),
+#endif
+#ifdef DT$_ESE56
   DT_ENT(ESE56),
+#endif
+#ifdef DT$_ESE58
   DT_ENT(ESE58),
+#endif
+#ifdef DT$_RZ27
   DT_ENT(RZ27),
+#endif
+#ifdef DT$_RZ37
   DT_ENT(RZ37),
+#endif
+#ifdef DT$_RZ34L
   DT_ENT(RZ34L),
+#endif
+#ifdef DT$_RZ35L
   DT_ENT(RZ35L),
+#endif
+#ifdef DT$_RZ36L
   DT_ENT(RZ36L),
+#endif
+#ifdef DT$_RZ38
   DT_ENT(RZ38),
+#endif
+#ifdef DT$_RZ75
   DT_ENT(RZ75),
+#endif
+#ifdef DT$_RZ59
   DT_ENT(RZ59),
+#endif
+#ifdef DT$_RZ13
   DT_ENT(RZ13),
+#endif
+#ifdef DT$_RZ14
   DT_ENT(RZ14),
+#endif
+#ifdef DT$_RZ15
   DT_ENT(RZ15),
+#endif
+#ifdef DT$_RZ16
   DT_ENT(RZ16),
+#endif
+#ifdef DT$_RZ17
   DT_ENT(RZ17),
+#endif
+#ifdef DT$_RZ18
   DT_ENT(RZ18),
+#endif
+#ifdef DT$_EZ51
   DT_ENT(EZ51),
+#endif
+#ifdef DT$_EZ52
   DT_ENT(EZ52),
+#endif
+#ifdef DT$_EZ53
   DT_ENT(EZ53),
+#endif
+#ifdef DT$_EZ54
   DT_ENT(EZ54),
+#endif
+#ifdef DT$_EZ58
   DT_ENT(EZ58),
+#endif
+#ifdef DT$_EF51
   DT_ENT(EF51),
+#endif
+#ifdef DT$_EF52
   DT_ENT(EF52),
+#endif
+#ifdef DT$_EF53
   DT_ENT(EF53),
+#endif
+#ifdef DT$_EF54
   DT_ENT(EF54),
+#endif
+#ifdef DT$_EF58
   DT_ENT(EF58),
+#endif
+#ifdef DT$_RF36
   DT_ENT(RF36),
+#endif
+#ifdef DT$_RF37
   DT_ENT(RF37),
+#endif
+#ifdef DT$_RF74
   DT_ENT(RF74),
+#endif
+#ifdef DT$_RF75
   DT_ENT(RF75),
+#endif
+#ifdef DT$_HSZ10
   DT_ENT(HSZ10),
+#endif
+#ifdef DT$_RZ28
   DT_ENT(RZ28),
+#endif
+#ifdef DT$_GENERIC_RX
   DT_ENT(GENERIC_RX),
+#endif
+#ifdef DT$_FD1
   DT_ENT(FD1),
+#endif
+#ifdef DT$_FD2
   DT_ENT(FD2),
+#endif
+#ifdef DT$_FD3
   DT_ENT(FD3),
+#endif
+#ifdef DT$_FD4
   DT_ENT(FD4),
+#endif
+#ifdef DT$_FD5
   DT_ENT(FD5),
+#endif
+#ifdef DT$_FD6
   DT_ENT(FD6),
+#endif
+#ifdef DT$_FD7
   DT_ENT(FD7),
+#endif
+#ifdef DT$_FD8
   DT_ENT(FD8),
+#endif
+#ifdef DT$_RZ29
   DT_ENT(RZ29),
+#endif
+#ifdef DT$_RZ26L
   DT_ENT(RZ26L),
+#endif
+#ifdef DT$_RRD43
   DT_ENT(RRD43),
+#endif
+#ifdef DT$_RRD44
   DT_ENT(RRD44),
+#endif
+#ifdef DT$_HSX00
   DT_ENT(HSX00),
+#endif
+#ifdef DT$_HSX01
   DT_ENT(HSX01),
+#endif
+#ifdef DT$_RZ26B
   DT_ENT(RZ26B),
+#endif
+#ifdef DT$_RZ27B
   DT_ENT(RZ27B),
+#endif
+#ifdef DT$_RZ28B
   DT_ENT(RZ28B),
+#endif
+#ifdef DT$_RZ29B
   DT_ENT(RZ29B),
+#endif
+#ifdef DT$_RZ73B
   DT_ENT(RZ73B),
+#endif
+#ifdef DT$_RZ74B
   DT_ENT(RZ74B),
+#endif
+#ifdef DT$_RZ75B
   DT_ENT(RZ75B),
+#endif
+#ifdef DT$_RWZ21
   DT_ENT(RWZ21),
+#endif
+#ifdef DT$_RZ27L
   DT_ENT(RZ27L),
+#endif
+#ifdef DT$_HSZ20
   DT_ENT(HSZ20),
+#endif
+#ifdef DT$_HSZ40
   DT_ENT(HSZ40),
+#endif
+#ifdef DT$_HSZ15
   DT_ENT(HSZ15),
+#endif
+#ifdef DT$_RZ26M
   DT_ENT(RZ26M),
+#endif
+#ifdef DT$_RW504
   DT_ENT(RW504),
+#endif
+#ifdef DT$_RW510
   DT_ENT(RW510),
+#endif
+#ifdef DT$_RW514
   DT_ENT(RW514),
+#endif
+#ifdef DT$_RW516
   DT_ENT(RW516),
+#endif
+#ifdef DT$_RWZ52
   DT_ENT(RWZ52),
+#endif
+#ifdef DT$_RWZ53
   DT_ENT(RWZ53),
+#endif
+#ifdef DT$_RWZ54
   DT_ENT(RWZ54),
+#endif
+#ifdef DT$_RWZ31
   DT_ENT(RWZ31),
+#endif
+#ifdef DT$_EZ31
   DT_ENT(EZ31),
+#endif
+#ifdef DT$_EZ32
   DT_ENT(EZ32),
+#endif
+#ifdef DT$_EZ33
   DT_ENT(EZ33),
+#endif
+#ifdef DT$_EZ34
   DT_ENT(EZ34),
+#endif
+#ifdef DT$_EZ35
   DT_ENT(EZ35),
+#endif
+#ifdef DT$_EZ31L
   DT_ENT(EZ31L),
+#endif
+#ifdef DT$_EZ32L
   DT_ENT(EZ32L),
+#endif
+#ifdef DT$_EZ33L
   DT_ENT(EZ33L),
+#endif
+#ifdef DT$_RZ28L
   DT_ENT(RZ28L),
+#endif
+#ifdef DT$_RWZ51
   DT_ENT(RWZ51),
+#endif
+#ifdef DT$_EZ56R
   DT_ENT(EZ56R),
+#endif
+#ifdef DT$_RAID0
   DT_ENT(RAID0),
+#endif
+#ifdef DT$_RAID5
   DT_ENT(RAID5),
+#endif
+#ifdef DT$_CONSOLE_CALLBACK
   DT_ENT(CONSOLE_CALLBACK),
+#endif
+#ifdef DT$_FILES_64
   DT_ENT(FILES_64),
+#endif
+#ifdef DT$_SWXCR
   DT_ENT(SWXCR),
+#endif
+#ifdef DT$_TE16
   DT_ENT(TE16),
+#endif
+#ifdef DT$_TU45
   DT_ENT(TU45),
+#endif
+#ifdef DT$_TU77
   DT_ENT(TU77),
+#endif
+#ifdef DT$_TS11
   DT_ENT(TS11),
+#endif
+#ifdef DT$_TU78
   DT_ENT(TU78),
+#endif
+#ifdef DT$_TA78
   DT_ENT(TA78),
+#endif
+#ifdef DT$_TU80
   DT_ENT(TU80),
+#endif
+#ifdef DT$_TU81
   DT_ENT(TU81),
+#endif
+#ifdef DT$_TA81
   DT_ENT(TA81),
+#endif
+#ifdef DT$_TK50
   DT_ENT(TK50),
+#endif
+#ifdef DT$_MR_TU70
   DT_ENT(MR_TU70),
+#endif
+#ifdef DT$_MR_TU72
   DT_ENT(MR_TU72),
+#endif
+#ifdef DT$_MW_TSU05
   DT_ENT(MW_TSU05),
+#endif
+#ifdef DT$_MW_TSV05
   DT_ENT(MW_TSV05),
+#endif
+#ifdef DT$_TK70
   DT_ENT(TK70),
+#endif
+#ifdef DT$_RV20
   DT_ENT(RV20),
+#endif
+#ifdef DT$_RV80
   DT_ENT(RV80),
+#endif
+#ifdef DT$_TK60
   DT_ENT(TK60),
+#endif
+#ifdef DT$_GENERIC_TU
   DT_ENT(GENERIC_TU),
+#endif
+#ifdef DT$_TA79
   DT_ENT(TA79),
+#endif
+#ifdef DT$_TAPE9
   DT_ENT(TAPE9),
+#endif
+#ifdef DT$_TA90
   DT_ENT(TA90),
+#endif
+#ifdef DT$_TF30
   DT_ENT(TF30),
+#endif
+#ifdef DT$_TF85
   DT_ENT(TF85),
+#endif
+#ifdef DT$_TF70
   DT_ENT(TF70),
+#endif
+#ifdef DT$_RV60
   DT_ENT(RV60),
+#endif
+#ifdef DT$_TZ30
   DT_ENT(TZ30),
+#endif
+#ifdef DT$_TM32
   DT_ENT(TM32),
+#endif
+#ifdef DT$_TZX0
   DT_ENT(TZX0),
+#endif
+#ifdef DT$_TSZ05
   DT_ENT(TSZ05),
+#endif
+#ifdef DT$_GENERIC_MK
   DT_ENT(GENERIC_MK),
+#endif
+#ifdef DT$_TK50S
   DT_ENT(TK50S),
+#endif
+#ifdef DT$_TZ30S
   DT_ENT(TZ30S),
+#endif
+#ifdef DT$_TK70L
   DT_ENT(TK70L),
+#endif
+#ifdef DT$_TLZ04
   DT_ENT(TLZ04),
+#endif
+#ifdef DT$_TZK10
   DT_ENT(TZK10),
+#endif
+#ifdef DT$_TSZ07
   DT_ENT(TSZ07),
+#endif
+#ifdef DT$_TSZ08
   DT_ENT(TSZ08),
+#endif
+#ifdef DT$_TA90E
   DT_ENT(TA90E),
+#endif
+#ifdef DT$_TZK11
   DT_ENT(TZK11),
+#endif
+#ifdef DT$_TZ85
   DT_ENT(TZ85),
+#endif
+#ifdef DT$_TZ86
   DT_ENT(TZ86),
+#endif
+#ifdef DT$_TZ87
   DT_ENT(TZ87),
+#endif
+#ifdef DT$_TZ857
   DT_ENT(TZ857),
+#endif
+#ifdef DT$_EXABYTE
   DT_ENT(EXABYTE),
+#endif
+#ifdef DT$_TAPE_LOADER_1
   DT_ENT(TAPE_LOADER_1),
+#endif
+#ifdef DT$_TA91
   DT_ENT(TA91),
+#endif
+#ifdef DT$_TLZ06
   DT_ENT(TLZ06),
+#endif
+#ifdef DT$_TA85
   DT_ENT(TA85),
+#endif
+#ifdef DT$_TKZ60
   DT_ENT(TKZ60),
+#endif
+#ifdef DT$_TLZ6
   DT_ENT(TLZ6),
+#endif
+#ifdef DT$_TZ867
   DT_ENT(TZ867),
+#endif
+#ifdef DT$_TZ877
   DT_ENT(TZ877),
+#endif
+#ifdef DT$_TAD85
   DT_ENT(TAD85),
+#endif
+#ifdef DT$_TF86
   DT_ENT(TF86),
+#endif
+#ifdef DT$_TKZ09
   DT_ENT(TKZ09),
+#endif
+#ifdef DT$_TA86
   DT_ENT(TA86),
+#endif
+#ifdef DT$_TA87
   DT_ENT(TA87),
+#endif
+#ifdef DT$_TD34
   DT_ENT(TD34),
+#endif
+#ifdef DT$_TD44
   DT_ENT(TD44),
+#endif
+#ifdef DT$_HST00
   DT_ENT(HST00),
+#endif
+#ifdef DT$_HST01
   DT_ENT(HST01),
+#endif
+#ifdef DT$_TLZ07
   DT_ENT(TLZ07),
+#endif
+#ifdef DT$_TLZ7
   DT_ENT(TLZ7),
+#endif
+#ifdef DT$_TZ88
   DT_ENT(TZ88),
+#endif
+#ifdef DT$_TZ885
   DT_ENT(TZ885),
+#endif
+#ifdef DT$_TZ887
   DT_ENT(TZ887),
+#endif
+#ifdef DT$_TZ89
   DT_ENT(TZ89),
+#endif
+#ifdef DT$_TZ895
   DT_ENT(TZ895),
+#endif
+#ifdef DT$_TZ897
   DT_ENT(TZ897),
+#endif
+#ifdef DT$_TZ875
   DT_ENT(TZ875),
+#endif
+#ifdef DT$_TL810
   DT_ENT(TL810),
+#endif
+#ifdef DT$_TL820
   DT_ENT(TL820),
+#endif
+#ifdef DT$_TZ865
   DT_ENT(TZ865),
+#endif
+#ifdef DT$_TTYUNKN
   DT_ENT(TTYUNKN),
+#endif
+#ifdef DT$_VT05
   DT_ENT(VT05),
+#endif
+#ifdef DT$_FT1
   DT_ENT(FT1),
+#endif
+#ifdef DT$_FT2
   DT_ENT(FT2),
+#endif
+#ifdef DT$_FT3
   DT_ENT(FT3),
+#endif
+#ifdef DT$_FT4
   DT_ENT(FT4),
+#endif
+#ifdef DT$_FT5
   DT_ENT(FT5),
+#endif
+#ifdef DT$_FT6
   DT_ENT(FT6),
+#endif
+#ifdef DT$_FT7
   DT_ENT(FT7),
+#endif
+#ifdef DT$_FT8
   DT_ENT(FT8),
+#endif
+#ifdef DT$_LAX
   DT_ENT(LAX),
+#endif
+#ifdef DT$_LA36
   DT_ENT(LA36),
+#endif
+#ifdef DT$_LA120
   DT_ENT(LA120),
+#endif
+#ifdef DT$_VT5X
   DT_ENT(VT5X),
+#endif
+#ifdef DT$_VT52
   DT_ENT(VT52),
+#endif
+#ifdef DT$_VT55
   DT_ENT(VT55),
+#endif
+#ifdef DT$_TQ_BTS
   DT_ENT(TQ_BTS),
+#endif
+#ifdef DT$_TEK401X
   DT_ENT(TEK401X),
+#endif
+#ifdef DT$_VT100
   DT_ENT(VT100),
+#endif
+#ifdef DT$_VK100
   DT_ENT(VK100),
+#endif
+#ifdef DT$_VT173
   DT_ENT(VT173),
+#endif
+#ifdef DT$_LA34
   DT_ENT(LA34),
+#endif
+#ifdef DT$_LA38
   DT_ENT(LA38),
+#endif
+#ifdef DT$_LA12
   DT_ENT(LA12),
+#endif
+#ifdef DT$_LA24
   DT_ENT(LA24),
+#endif
+#ifdef DT$_LA100
   DT_ENT(LA100),
+#endif
+#ifdef DT$_LQP02
   DT_ENT(LQP02),
+#endif
+#ifdef DT$_VT101
   DT_ENT(VT101),
+#endif
+#ifdef DT$_VT102
   DT_ENT(VT102),
+#endif
+#ifdef DT$_VT105
   DT_ENT(VT105),
+#endif
+#ifdef DT$_VT125
   DT_ENT(VT125),
+#endif
+#ifdef DT$_VT131
   DT_ENT(VT131),
+#endif
+#ifdef DT$_VT132
   DT_ENT(VT132),
+#endif
+#ifdef DT$_DZ11
   DT_ENT(DZ11),
+#endif
+#ifdef DT$_DZ32
   DT_ENT(DZ32),
+#endif
+#ifdef DT$_DZ730
   DT_ENT(DZ730),
+#endif
+#ifdef DT$_DMZ32
   DT_ENT(DMZ32),
+#endif
+#ifdef DT$_DHV
   DT_ENT(DHV),
+#endif
+#ifdef DT$_DHU
   DT_ENT(DHU),
+#endif
+#ifdef DT$_SLU
   DT_ENT(SLU),
+#endif
+#ifdef DT$_TERM9
   DT_ENT(TERM9),
+#endif
+#ifdef DT$_LAT
   DT_ENT(LAT),
+#endif
+#ifdef DT$_VS100
   DT_ENT(VS100),
+#endif
+#ifdef DT$_VS125
   DT_ENT(VS125),
+#endif
+#ifdef DT$_VL_VS8200
   DT_ENT(VL_VS8200),
+#endif
+#ifdef DT$_VD
   DT_ENT(VD),
+#endif
+#ifdef DT$_DECW_OUTPUT
   DT_ENT(DECW_OUTPUT),
+#endif
+#ifdef DT$_DECW_INPUT
   DT_ENT(DECW_INPUT),
+#endif
+#ifdef DT$_DECW_PSEUDO
   DT_ENT(DECW_PSEUDO),
+#endif
+#ifdef DT$_DMC11
   DT_ENT(DMC11),
+#endif
+#ifdef DT$_DMR11
   DT_ENT(DMR11),
+#endif
+#ifdef DT$_XK_3271
   DT_ENT(XK_3271),
+#endif
+#ifdef DT$_XJ_2780
   DT_ENT(XJ_2780),
+#endif
+#ifdef DT$_NW_X25
   DT_ENT(NW_X25),
+#endif
+#ifdef DT$_NV_X29
   DT_ENT(NV_X29),
+#endif
+#ifdef DT$_SB_ISB11
   DT_ENT(SB_ISB11),
+#endif
+#ifdef DT$_MX_MUX200
   DT_ENT(MX_MUX200),
+#endif
+#ifdef DT$_DMP11
   DT_ENT(DMP11),
+#endif
+#ifdef DT$_DMF32
   DT_ENT(DMF32),
+#endif
+#ifdef DT$_XV_3271
   DT_ENT(XV_3271),
+#endif
+#ifdef DT$_CI
   DT_ENT(CI),
+#endif
+#ifdef DT$_NI
   DT_ENT(NI),
+#endif
+#ifdef DT$_UNA11
   DT_ENT(UNA11),
+#endif
+#ifdef DT$_DEUNA
   DT_ENT(DEUNA),
+#endif
+#ifdef DT$_YN_X25
   DT_ENT(YN_X25),
+#endif
+#ifdef DT$_YO_X25
   DT_ENT(YO_X25),
+#endif
+#ifdef DT$_YP_ADCCP
   DT_ENT(YP_ADCCP),
+#endif
+#ifdef DT$_YQ_3271
   DT_ENT(YQ_3271),
+#endif
+#ifdef DT$_YR_DDCMP
   DT_ENT(YR_DDCMP),
+#endif
+#ifdef DT$_YS_SDLC
   DT_ENT(YS_SDLC),
+#endif
+#ifdef DT$_UK_KTC32
   DT_ENT(UK_KTC32),
+#endif
+#ifdef DT$_DEQNA
   DT_ENT(DEQNA),
+#endif
+#ifdef DT$_DMV11
   DT_ENT(DMV11),
+#endif
+#ifdef DT$_ES_LANCE
   DT_ENT(ES_LANCE),
+#endif
+#ifdef DT$_DELUA
   DT_ENT(DELUA),
+#endif
+#ifdef DT$_NQ_3271
   DT_ENT(NQ_3271),
+#endif
+#ifdef DT$_DMB32
   DT_ENT(DMB32),
+#endif
+#ifdef DT$_YI_KMS11K
   DT_ENT(YI_KMS11K),
+#endif
+#ifdef DT$_ET_DEBNT
   DT_ENT(ET_DEBNT),
+#endif
+#ifdef DT$_ET_DEBNA
   DT_ENT(ET_DEBNA),
+#endif
+#ifdef DT$_SJ_DSV11
   DT_ENT(SJ_DSV11),
+#endif
+#ifdef DT$_SL_DSB32
   DT_ENT(SL_DSB32),
+#endif
+#ifdef DT$_ZS_DST32
   DT_ENT(ZS_DST32),
+#endif
+#ifdef DT$_XQ_DELQA
   DT_ENT(XQ_DELQA),
+#endif
+#ifdef DT$_ET_DEBNI
   DT_ENT(ET_DEBNI),
+#endif
+#ifdef DT$_EZ_SGEC
   DT_ENT(EZ_SGEC),
+#endif
+#ifdef DT$_EX_DEMNA
   DT_ENT(EX_DEMNA),
+#endif
+#ifdef DT$_DIV32
   DT_ENT(DIV32),
+#endif
+#ifdef DT$_XQ_DEQTA
   DT_ENT(XQ_DEQTA),
+#endif
+#ifdef DT$_FT_NI
   DT_ENT(FT_NI),
+#endif
+#ifdef DT$_EP_LANCE
   DT_ENT(EP_LANCE),
+#endif
+#ifdef DT$_KWV32
   DT_ENT(KWV32),
+#endif
+#ifdef DT$_SM_DSF32
   DT_ENT(SM_DSF32),
+#endif
+#ifdef DT$_FX_DEMFA
   DT_ENT(FX_DEMFA),
+#endif
+#ifdef DT$_SF_DSF32
   DT_ENT(SF_DSF32),
+#endif
+#ifdef DT$_SE_DUP11
   DT_ENT(SE_DUP11),
+#endif
+#ifdef DT$_SE_DPV11
   DT_ENT(SE_DPV11),
+#endif
+#ifdef DT$_ZT_DSW
   DT_ENT(ZT_DSW),
+#endif
+#ifdef DT$_FC_DEFZA
   DT_ENT(FC_DEFZA),
+#endif
+#ifdef DT$_EC_PMAD
   DT_ENT(EC_PMAD),
+#endif
+#ifdef DT$_EZ_TGEC
   DT_ENT(EZ_TGEC),
+#endif
+#ifdef DT$_EA_DEANA
   DT_ENT(EA_DEANA),
+#endif
+#ifdef DT$_EY_NITC2
   DT_ENT(EY_NITC2),
+#endif
+#ifdef DT$_ER_DE422
   DT_ENT(ER_DE422),
+#endif
+#ifdef DT$_ER_DE200
   DT_ENT(ER_DE200),
+#endif
+#ifdef DT$_EW_TULIP
   DT_ENT(EW_TULIP),
+#endif
+#ifdef DT$_FA_DEFAA
   DT_ENT(FA_DEFAA),
+#endif
+#ifdef DT$_FC_DEFTA
   DT_ENT(FC_DEFTA),
+#endif
+#ifdef DT$_FQ_DEFQA
   DT_ENT(FQ_DEFQA),
+#endif
+#ifdef DT$_FR_DEFEA
   DT_ENT(FR_DEFEA),
+#endif
+#ifdef DT$_FW_DEFPA
   DT_ENT(FW_DEFPA),
+#endif
+#ifdef DT$_IC_DETRA
   DT_ENT(IC_DETRA),
+#endif
+#ifdef DT$_IQ_DEQRA
   DT_ENT(IQ_DEQRA),
+#endif
+#ifdef DT$_IR_DW300
   DT_ENT(IR_DW300),
+#endif
+#ifdef DT$_ZR_SCC
   DT_ENT(ZR_SCC),
+#endif
+#ifdef DT$_ZY_DSYT1
   DT_ENT(ZY_DSYT1),
+#endif
+#ifdef DT$_ZE_DNSES
   DT_ENT(ZE_DNSES),
+#endif
+#ifdef DT$_ER_DE425
   DT_ENT(ER_DE425),
+#endif
+#ifdef DT$_EW_DE435
   DT_ENT(EW_DE435),
+#endif
+#ifdef DT$_ER_DE205
   DT_ENT(ER_DE205),
+#endif
+#ifdef DT$_HC_OTTO
   DT_ENT(HC_OTTO),
+#endif
+#ifdef DT$_ZS_PBXDI
   DT_ENT(ZS_PBXDI),
+#endif
+#ifdef DT$_EL_ELAN
   DT_ENT(EL_ELAN),
+#endif
+#ifdef DT$_HW_OTTO
   DT_ENT(HW_OTTO),
+#endif
+#ifdef DT$_EO_3C598
   DT_ENT(EO_3C598),
+#endif
+#ifdef DT$_IW_TC4048
   DT_ENT(IW_TC4048),
+#endif
+#ifdef DT$_EW_DE450
   DT_ENT(EW_DE450),
+#endif
+#ifdef DT$_EW_DE500
   DT_ENT(EW_DE500),
+#endif
+#ifdef DT$_CL_CLIP
   DT_ENT(CL_CLIP),
+#endif
+#ifdef DT$_ZW_PBXDP
   DT_ENT(ZW_PBXDP),
+#endif
+#ifdef DT$_HW_METEOR
   DT_ENT(HW_METEOR),
+#endif
+#ifdef DT$_LP11
   DT_ENT(LP11),
+#endif
+#ifdef DT$_LA11
   DT_ENT(LA11),
+#endif
+#ifdef DT$_LA180
   DT_ENT(LA180),
+#endif
+#ifdef DT$_LC_DMF32
   DT_ENT(LC_DMF32),
+#endif
+#ifdef DT$_LI_DMB32
   DT_ENT(LI_DMB32),
+#endif
+#ifdef DT$_PRTR9
   DT_ENT(PRTR9),
+#endif
+#ifdef DT$_SCSI_SCANNER_1
   DT_ENT(SCSI_SCANNER_1),
+#endif
+#ifdef DT$_PC_PRINTER
   DT_ENT(PC_PRINTER),
+#endif
+#ifdef DT$_CR11
   DT_ENT(CR11),
+#endif
+#ifdef DT$_MBX
   DT_ENT(MBX),
+#endif
+#ifdef DT$_SHRMBX
   DT_ENT(SHRMBX),
+#endif
+#ifdef DT$_NULL
   DT_ENT(NULL),
+#endif
+#ifdef DT$_PIPE
   DT_ENT(PIPE),
+#endif
+#ifdef DT$_DAP_DEVICE
   DT_ENT(DAP_DEVICE),
+#endif
+#ifdef DT$_LPA11
   DT_ENT(LPA11),
+#endif
+#ifdef DT$_DR780
   DT_ENT(DR780),
+#endif
+#ifdef DT$_DR750
   DT_ENT(DR750),
+#endif
+#ifdef DT$_DR11W
   DT_ENT(DR11W),
+#endif
+#ifdef DT$_PCL11R
   DT_ENT(PCL11R),
+#endif
+#ifdef DT$_PCL11T
   DT_ENT(PCL11T),
+#endif
+#ifdef DT$_DR11C
   DT_ENT(DR11C),
+#endif
+#ifdef DT$_BS_DT07
   DT_ENT(BS_DT07),
+#endif
+#ifdef DT$_XP_PCL11B
   DT_ENT(XP_PCL11B),
+#endif
+#ifdef DT$_IX_IEX11
   DT_ENT(IX_IEX11),
+#endif
+#ifdef DT$_FP_FEPCM
   DT_ENT(FP_FEPCM),
+#endif
+#ifdef DT$_TK_FCM
   DT_ENT(TK_FCM),
+#endif
+#ifdef DT$_XI_DR11C
   DT_ENT(XI_DR11C),
+#endif
+#ifdef DT$_XA_DRV11WA
   DT_ENT(XA_DRV11WA),
+#endif
+#ifdef DT$_DRB32
   DT_ENT(DRB32),
+#endif
+#ifdef DT$_HX_DRQ3B
   DT_ENT(HX_DRQ3B),
+#endif
+#ifdef DT$_DECVOICE
   DT_ENT(DECVOICE),
+#endif
+#ifdef DT$_DTC04
   DT_ENT(DTC04),
+#endif
+#ifdef DT$_DTC05
   DT_ENT(DTC05),
+#endif
+#ifdef DT$_DTCN5
   DT_ENT(DTCN5),
+#endif
+#ifdef DT$_AMD79C30A
   DT_ENT(AMD79C30A),
+#endif
+#ifdef DT$_CI780
   DT_ENT(CI780),
+#endif
+#ifdef DT$_CI750
   DT_ENT(CI750),
+#endif
+#ifdef DT$_UQPORT
   DT_ENT(UQPORT),
+#endif
+#ifdef DT$_UDA50
   DT_ENT(UDA50),
+#endif
+#ifdef DT$_UDA50A
   DT_ENT(UDA50A),
+#endif
+#ifdef DT$_LESI
   DT_ENT(LESI),
+#endif
+#ifdef DT$_TU81P
   DT_ENT(TU81P),
+#endif
+#ifdef DT$_RDRX
   DT_ENT(RDRX),
+#endif
+#ifdef DT$_TK50P
   DT_ENT(TK50P),
+#endif
+#ifdef DT$_RUX50P
   DT_ENT(RUX50P),
+#endif
+#ifdef DT$_RC26P
   DT_ENT(RC26P),
+#endif
+#ifdef DT$_QDA50
   DT_ENT(QDA50),
+#endif
+#ifdef DT$_KDA50
   DT_ENT(KDA50),
+#endif
+#ifdef DT$_BDA50
   DT_ENT(BDA50),
+#endif
+#ifdef DT$_KDB50
   DT_ENT(KDB50),
+#endif
+#ifdef DT$_RRD50P
   DT_ENT(RRD50P),
+#endif
+#ifdef DT$_QDA25
   DT_ENT(QDA25),
+#endif
+#ifdef DT$_KDA25
   DT_ENT(KDA25),
+#endif
+#ifdef DT$_BCI750
   DT_ENT(BCI750),
+#endif
+#ifdef DT$_BCA
   DT_ENT(BCA),
+#endif
+#ifdef DT$_RQDX3
   DT_ENT(RQDX3),
+#endif
+#ifdef DT$_NISCA
   DT_ENT(NISCA),
+#endif
+#ifdef DT$_AIO
   DT_ENT(AIO),
+#endif
+#ifdef DT$_KFBTA
   DT_ENT(KFBTA),
+#endif
+#ifdef DT$_AIE
   DT_ENT(AIE),
+#endif
+#ifdef DT$_DEBNT
   DT_ENT(DEBNT),
+#endif
+#ifdef DT$_BSA
   DT_ENT(BSA),
+#endif
+#ifdef DT$_KSB50
   DT_ENT(KSB50),
+#endif
+#ifdef DT$_TK70P
   DT_ENT(TK70P),
+#endif
+#ifdef DT$_RV20P
   DT_ENT(RV20P),
+#endif
+#ifdef DT$_RV80P
   DT_ENT(RV80P),
+#endif
+#ifdef DT$_TK60P
   DT_ENT(TK60P),
+#endif
+#ifdef DT$_SII
   DT_ENT(SII),
+#endif
+#ifdef DT$_KFSQSA
   DT_ENT(KFSQSA),
+#endif
+#ifdef DT$_KFQSA
   DT_ENT(KFQSA),
+#endif
+#ifdef DT$_SHAC
   DT_ENT(SHAC),
+#endif
+#ifdef DT$_CIXCD
   DT_ENT(CIXCD),
+#endif
+#ifdef DT$_N5380
   DT_ENT(N5380),
+#endif
+#ifdef DT$_SCSII
   DT_ENT(SCSII),
+#endif
+#ifdef DT$_HSX50
   DT_ENT(HSX50),
+#endif
+#ifdef DT$_KDM70
   DT_ENT(KDM70),
+#endif
+#ifdef DT$_TM32P
   DT_ENT(TM32P),
+#endif
+#ifdef DT$_TK7LP
   DT_ENT(TK7LP),
+#endif
+#ifdef DT$_SWIFT
   DT_ENT(SWIFT),
+#endif
+#ifdef DT$_N53C94
   DT_ENT(N53C94),
+#endif
+#ifdef DT$_KFMSA
   DT_ENT(KFMSA),
+#endif
+#ifdef DT$_SCSI_XTENDR
   DT_ENT(SCSI_XTENDR),
+#endif
+#ifdef DT$_FT_TRACE_RAM
   DT_ENT(FT_TRACE_RAM),
+#endif
+#ifdef DT$_XVIB
   DT_ENT(XVIB),
+#endif
+#ifdef DT$_XZA_SCSI
   DT_ENT(XZA_SCSI),
+#endif
+#ifdef DT$_XZA_DSSI
   DT_ENT(XZA_DSSI),
+#endif
+#ifdef DT$_N710_SCSI
   DT_ENT(N710_SCSI),
+#endif
+#ifdef DT$_N710_DSSI
   DT_ENT(N710_DSSI),
+#endif
+#ifdef DT$_AHA1742A
   DT_ENT(AHA1742A),
+#endif
+#ifdef DT$_TZA_SCSI
   DT_ENT(TZA_SCSI),
+#endif
+#ifdef DT$_N810_SCSI
   DT_ENT(N810_SCSI),
+#endif
+#ifdef DT$_CIPCA
   DT_ENT(CIPCA),
+#endif
+#ifdef DT$_ISP1020
   DT_ENT(ISP1020),
+#endif
+#ifdef DT$_MC_SPUR
   DT_ENT(MC_SPUR),
+#endif
+#ifdef DT$_PZA_SCSI
   DT_ENT(PZA_SCSI),
+#endif
+#ifdef DT$_DN11
   DT_ENT(DN11),
+#endif
+#ifdef DT$_PV
   DT_ENT(PV),
+#endif
+#ifdef DT$_SFUN9
   DT_ENT(SFUN9),
+#endif
+#ifdef DT$_USER9
   DT_ENT(USER9),
+#endif
+#ifdef DT$_GENERIC_SCSI
   DT_ENT(GENERIC_SCSI),
+#endif
+#ifdef DT$_DMA_520
   DT_ENT(DMA_520),
+#endif
+#ifdef DT$_T3270
   DT_ENT(T3270),
+#endif
   {NULL, 0}
 };
 
-struct DevInfoID {
-  char *DevInfoName; /* Pointer to the item name */
-  int  DVIValue;      /* Value to use in the getDVI item list */
+struct GenericID {
+  char *GenericName; /* Pointer to the item name */
+  int  SyscallValue;      /* Value to use in the getDVI item list */
   int  BufferLen;     /* Length the return va buf needs to be. (no nul */
                       /* terminators, so must be careful with the return */
                       /* values. */
   int  ReturnType;    /* Type of data the item returns */
 };
 
-struct DevInfoID DevInfoList[] =
+struct GenericID DevInfoList[] =
 {
   DVI_ENT(ACPPID, 4, IS_LONGWORD),
   DVI_ENT(ACPTYPE, 4, IS_ENUM),
@@ -762,6 +1773,13 @@ struct DevInfoID DevInfoList[] =
   {NULL, 0, 0, 0}
 };
 
+
+struct GenericID MountList[] =
+{
+  MOUNT_ENT(ACCESSED
+  {NULL, 0, 0, 0}
+};
+  
 char *MonthNames[12] = {
   "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
   "Oct", "Nov", "Dec"} ;
@@ -779,6 +1797,33 @@ static int DevInfoMallocSize = 0;
     (ile)->buffer = (bufaddr); \
     (ile)->retlen = (retlen_addr) ;}
 
+/* Take an access mode SV and return the real mode */
+int
+decode_accmode(SV *AccMode)
+{
+  char *AccessString;
+
+  if (AccMode == &sv_undef) {
+    return 0;
+  } else {
+    AccessString = SvPV(AccMode, na);
+    if (!strcmp(AccessString, "KERNEL")) {
+      return(PSL$C_KERNEL);
+    }
+    if (!strcmp(AccessString, "EXEC")) {
+      return(PSL$C_EXEC);
+    }
+    if (!strcmp(AccessString, "SUPER")) {
+      return(PSL$C_SUPER);
+    }
+    if (!strcmp(AccessString, "USER")) {
+      return(PSL$C_USER);
+    }
+  }
+
+  return 0;
+}
+  
 /* take a class name and return the corresponding code */
 int
 dev_class_decode(SV *ClassNameSV)
@@ -863,7 +1908,7 @@ generic_bitmap_encode(HV * FlagHV, int ItemCode)
 /* allocated, as are the length shorts and stuff. If the hash entries have */
 /* values, those values are copied into the buffers, too. Returns the */
 /* number of items stuck in the itemlist */
-int build_itemlist(ITMLST *ItemList, HV *HashRef)
+int build_itemlist(struct GenericID InfoList[], ITMLST *ItemList, HV *HashRef)
 {
   /* standard, dopey index variable */
   int i = 0, ItemListIndex = 0;
@@ -879,49 +1924,49 @@ int build_itemlist(ITMLST *ItemList, HV *HashRef)
   struct dsc$descriptor_s TimeStringDesc;
   int Status;
 
-  for(i = 0; DevInfoList[i].DevInfoName; i++) {
-    TempNameLen = strlen(DevInfoList[i].DevInfoName);
-    if (hv_exists(HashRef, DevInfoList[i].DevInfoName, TempNameLen)) {
+  for(i = 0; InfoList[i].GenericName; i++) {
+    TempNameLen = strlen(InfoList[i].GenericName);
+    if (hv_exists(HashRef, InfoList[i].GenericName, TempNameLen)) {
       /* Figure out some stuff. Avoids duplication, and makes the macro */
       /* expansion of init_itemlist a little easier */
-      ItemCode = DevInfoList[i].DVIValue;
-      switch(DevInfoList[i].ReturnType) {
+      ItemCode = InfoList[i].SyscallValue;
+      switch(InfoList[i].ReturnType) {
         /* Quadwords are treated as strings for right now */
       case IS_QUADWORD:
       case IS_STRING:
         TempSV = *hv_fetch(HashRef,
-                           DevInfoList[i].DevInfoName,
+                           InfoList[i].GenericName,
                            TempNameLen, FALSE);
         TempCharPointer = SvPV(TempSV, TempStrLen);
         
         /* Allocate us some buffer space */
-        New(NULL, TempBuffer, DevInfoList[i].BufferLen, char);
+        New(NULL, TempBuffer, InfoList[i].BufferLen, char);
         Newz(NULL, TempLen, 1, unsigned short);
         
         /* Set the string buffer to spaces */
-        memset(TempBuffer, ' ', DevInfoList[i].BufferLen);
+        memset(TempBuffer, ' ', InfoList[i].BufferLen);
         
         /* If there was something in the SV, then copy it over */
         if (TempStrLen) {
           Copy(TempCharPointer, TempBuffer, TempStrLen <
-               DevInfoList[i].BufferLen ? TempStrLen :
-               DevInfoList[i].BufferLen, char);
+               InfoList[i].BufferLen ? TempStrLen :
+               InfoList[i].BufferLen, char);
         }
         
         init_itemlist(&ItemList[ItemListIndex],
-                      DevInfoList[i].BufferLen,
+                      InfoList[i].BufferLen,
                       ItemCode,
                       TempBuffer,
                       TempLen);
         break;
       case IS_VMSDATE:
         TempSV = *hv_fetch(HashRef,
-                           DevInfoList[i].DevInfoName,
+                           InfoList[i].GenericName,
                            TempNameLen, FALSE);
         TempCharPointer = SvPV(TempSV, TempStrLen);
         
         /* Allocate us some buffer space */
-        New(NULL, TempBuffer, DevInfoList[i].BufferLen, char);
+        New(NULL, TempBuffer, InfoList[i].BufferLen, char);
         Newz(NULL, TempLen, 1, unsigned short);
         
         /* Fill in the time string descriptor */
@@ -937,7 +1982,7 @@ int build_itemlist(ITMLST *ItemList, HV *HashRef)
         }
         
         init_itemlist(&ItemList[ItemListIndex],
-                      DevInfoList[i].BufferLen,
+                      InfoList[i].BufferLen,
                       ItemCode,
                       TempBuffer,
                       TempLen);
@@ -945,12 +1990,12 @@ int build_itemlist(ITMLST *ItemList, HV *HashRef)
         
       case IS_LONGWORD:
         TempSV = *hv_fetch(HashRef,
-                           DevInfoList[i].DevInfoName,
+                           InfoList[i].GenericName,
                            TempNameLen, FALSE);
         TempLong = SvIVX(TempSV);
         
         /* Allocate us some buffer space */
-        New(NULL, TempBuffer, DevInfoList[i].BufferLen, char);
+        New(NULL, TempBuffer, InfoList[i].BufferLen, char);
         Newz(NULL, TempLen, 1, unsigned short);
         
         
@@ -958,7 +2003,7 @@ int build_itemlist(ITMLST *ItemList, HV *HashRef)
         *TempBuffer = TempLong;
         
         init_itemlist(&ItemList[ItemListIndex],
-                      DevInfoList[i].BufferLen,
+                      InfoList[i].BufferLen,
                       ItemCode,
                       TempBuffer,
                       TempLen);
@@ -966,7 +2011,7 @@ int build_itemlist(ITMLST *ItemList, HV *HashRef)
         
       case IS_BITMAP:
         TempSV = *hv_fetch(HashRef,
-                           DevInfoList[i].DevInfoName,
+                           InfoList[i].GenericName,
                            TempNameLen, FALSE);
         
         /* Is the SV an integer? If so, then we'll use that value. */
@@ -979,7 +2024,7 @@ int build_itemlist(ITMLST *ItemList, HV *HashRef)
         }
         
         /* Allocate us some buffer space */
-        New(NULL, TempBuffer, DevInfoList[i].BufferLen, char);
+        New(NULL, TempBuffer, InfoList[i].BufferLen, char);
         Newz(NULL, TempLen, 1, unsigned short);
         
         
@@ -987,7 +2032,7 @@ int build_itemlist(ITMLST *ItemList, HV *HashRef)
         *TempBuffer = TempLong;
         
         init_itemlist(&ItemList[ItemListIndex],
-                      DevInfoList[i].BufferLen,
+                      InfoList[i].BufferLen,
                       ItemCode,
                       TempBuffer,
                       TempLen);
@@ -1089,7 +2134,7 @@ de_enum(int PSCANVal, char *EnumName)
 void
 tote_up_info_count()
 {
-  for(DevInfoCount = 0; DevInfoList[DevInfoCount].DevInfoName;
+  for(DevInfoCount = 0; DevInfoList[DevInfoCount].GenericName;
       DevInfoCount++) {
     /* While we're here, we might as well get a generous estimate of how */
     /* much space we'll need for all the buffers */
@@ -1189,14 +2234,14 @@ device_info(device_name)
     
     /* Note some important stuff (like what we're doing) in our local */
     /* tracking array */
-    OurDataList[i].ItemName = DevInfoList[i].DevInfoName;
+    OurDataList[i].ItemName = DevInfoList[i].GenericName;
     OurDataList[i].ReturnLength = &ReturnLengths[i];
     OurDataList[i].ReturnType = DevInfoList[i].ReturnType;
     OurDataList[i].ItemListEntry = i;
     
     /* Fill in the item list */
     init_itemlist(&ListOItems[i], DevInfoList[i].BufferLen,
-                  DevInfoList[i].DVIValue, OurDataList[i].ReturnBuffer,
+                  DevInfoList[i].SyscallValue, OurDataList[i].ReturnBuffer,
                   &ReturnLengths[i]);
     
   }
@@ -1229,7 +2274,7 @@ device_info(device_name)
         TempLongPointer = OurDataList[i].ReturnBuffer;
         hv_store(AllPurposeHV, OurDataList[i].ItemName,
                  strlen(OurDataList[i].ItemName),
-                 enum_name(DevInfoList[i].DVIValue,
+                 enum_name(DevInfoList[i].SyscallValue,
                            *TempLongPointer), 0);
         break;
       case IS_BITMAP:
@@ -1453,5 +2498,69 @@ decode_device_bitmap(InfoName, BitmapValue)
     XPUSHs(newRV((SV *)AllPurposeHV));
   } else {
     XPUSHs(&sv_undef);
+  }
+}
+
+SV *
+allocate(DevName, FirstAvail=&sv_undef, AccMode=&sv_undef)
+     SV *DevName
+     SV *FirstAvail
+     SV *AccMode
+   CODE:
+{
+  char ReturnName[65];
+  char *AccessString;
+  unsigned short ReturnNameLen;
+  int AccessMode, Flags, Status;
+  unsigned int DevNameLen;
+  struct dsc$descriptor_s DevNameDesc;
+  struct dsc$descriptor_s RetName;
+  
+  RetName.dsc$a_pointer = ReturnName;
+  RetName.dsc$w_length = 64;
+  RetName.dsc$b_dtype = DSC$K_DTYPE_T;
+  RetName.dsc$b_class = DSC$K_CLASS_S;
+  
+  DevNameDesc.dsc$a_pointer = SvPV(DevName, DevNameLen);
+  DevNameDesc.dsc$w_length = DevNameLen;
+  DevNameDesc.dsc$b_dtype = DSC$K_DTYPE_T;
+  DevNameDesc.dsc$b_class = DSC$K_CLASS_S;
+
+  Flags = SvTRUE(FirstAvail);
+  AccessMode = decode_accmode(AccMode);
+
+  Status = sys$alloc(&DevNameDesc, &ReturnNameLen, &RetName, AccessMode,
+                     Flags);
+  if (SS$_NORMAL == Status) {
+    ST(0) = sv_2mortal(newSVpv(ReturnName, ReturnNameLen));
+  } else {
+    SETERRNO(EVMSERR, Status);
+    ST(0) = &sv_undef;
+  }
+}
+
+SV *
+deallocate(DevName, AccMode=&sv_undef)
+     SV *DevName
+     SV *AccMode
+   CODE:
+{
+  struct dsc$descriptor_s DevNameDesc;
+  int AccessMode, Status;
+  unsigned int DevNameLen;
+
+  DevNameDesc.dsc$a_pointer = SvPV(DevName, DevNameLen);
+  DevNameDesc.dsc$w_length = DevNameLen;
+  DevNameDesc.dsc$b_dtype = DSC$K_DTYPE_T;
+  DevNameDesc.dsc$b_class = DSC$K_CLASS_S;
+
+  AccessMode = decode_accmode(AccMode);
+
+  Status = sys$dalloc(&DevNameDesc, AccessMode);
+  if (SS$_NORMAL == Status) {
+    ST(0) = &sv_yes;
+  } else {
+    SETERRNO(EVMSERR, Status);
+    ST(0) = &sv_undef;
   }
 }

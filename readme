@@ -18,5 +18,6 @@ mms install
 
 to install it.
 
-This first beta release only has the device list and device info functions
-implemented.
+This beta release only has the device list, device info, allocate, and
+deallocate functions implemented. (as well as some basic list functions,
+but they're not that interesting)

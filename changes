@@ -14,3 +14,11 @@ Revision history for Perl extension VMS::Device.
     - Changed device_list--no special hash. Now just takes two extra
       parameters.
     - Added device_classes and device_types functions. 
+
+0.02  Wed May 27 17:03:32 1998
+    - Added allocate and deallocate functions. Keen!
+
+0.02  Thu May 28 11:32:34 1998
+    - Fixed the example for total free blocks
+    - #ifdef'd all the device types and classes. (Yay, perl! :) Should
+      function much better on non-alpha non-7.1 systems.
