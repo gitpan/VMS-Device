@@ -14,6 +14,9 @@ extern "C" {
 #include <dcdef.h>
 #include <dvsdef.h>
 #include <psldef.h>
+#include <initdef.h>
+#include <mntdef.h>
+#include <dmtdef.h>
   
 #include "EXTERN.h"
 #include "perl.h"
@@ -40,6 +43,9 @@ typedef struct {char  *ItemName;         /* Name of the item we're getting */
               } FetchedItem; /* Use this keep track of the items in the */
                              /* 'grab everything' GETDVI call */ 
 
+#define IS_INPUT (1<<0)
+#define IS_OUTPUT (1<<1)
+
 #define dev_bit_test(a, b, c) \
 { \
     if (c && DEV$M_##b) \
@@ -61,14 +67,28 @@ typedef struct {char  *ItemName;         /* Name of the item we're getting */
     else \
     hv_store(a, #b, strlen(#b), &sv_no, 0);}   
 
-#define DVI_ENT(a, b, c) {#a, DVI$_##a, b, c}
-#define MNT_ENT
+#define DVI_ENT(a, b, c) {#a, DVI$_##a, b, c, IS_OUTPUT}
+#define MNT_ENT(a, b, c) {#a, MNT$_##a, b, c, IS_INPUT}
+#define INI_ENT(a, b, c) {#a, INIT$_##a, b, c, IS_INPUT}
 #define DC_ENT(a) {#a, DC$_##a}
 #define DT_ENT(a) {#a, DT$_##a}
 
+/* The fake item code for generic_bitmap_decode */
+#define SYSCALL_DISMOU 42424242
+
 /* Macro to expand out entries for generic_bitmap_encode */
+#define DMT_D(a) { if (!strncmp(FlagName, #a, FlagLen)) { \
+                       EncodedValue[0] = EncodedValue[0] | DMT$M_##a; \
+                       break; \
+                     } \
+                 }
 #define BME_D(a) { if (!strncmp(FlagName, #a, FlagLen)) { \
-                       EncodedValue = EncodedValue | DVI$M_##a; \
+                       EncodedValue[0] = EncodedValue[0] | MNT$M_##a; \
+                       break; \
+                     } \
+                 }
+#define BME2_D(a) { if (!strncmp(FlagName, #a, FlagLen)) { \
+                       EncodedValue[1] = EncodedValue[1] | MNT2$M_##a; \
                        break; \
                      } \
                  }
@@ -1644,142 +1664,456 @@ struct GenericID {
                       /* terminators, so must be careful with the return */
                       /* values. */
   int  ReturnType;    /* Type of data the item returns */
+  int  InOrOut;       /* Is this an input or an output item? */
 };
 
 struct GenericID DevInfoList[] =
 {
+#ifdef DVI$_ACPPID
   DVI_ENT(ACPPID, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_ACPTYPE
   DVI_ENT(ACPTYPE, 4, IS_ENUM),
+#endif
+#ifdef DVI$_ALLDEVNAM
   DVI_ENT(ALLDEVNAM, 64, IS_STRING),
+#endif
+#ifdef DVI$_ALLOCLASS
   DVI_ENT(ALLOCLASS, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_ALT_HOST_AVAIL
   DVI_ENT(ALT_HOST_AVAIL, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_ALT_HOST_NAME
   DVI_ENT(ALT_HOST_NAME, 64, IS_STRING),
+#endif
+#ifdef DVI$_ALT_HOST_TYPE
   DVI_ENT(ALT_HOST_TYPE, 64, IS_STRING),
+#endif
+#ifdef DVI$_CLUSTER
   DVI_ENT(CLUSTER, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_CYLINDERS
   DVI_ENT(CYLINDERS, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_DEVBUFSIZ
   DVI_ENT(DEVBUFSIZ, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_DEVCHAR
   DVI_ENT(DEVCHAR, 4, IS_BITMAP),
+#endif
+#ifdef DVI$_DEVCLASS
   DVI_ENT(DEVCLASS, 4, IS_ENUM),
+#endif
+#ifdef DVI$_DEVDEPEND
   DVI_ENT(DEVDEPEND, 4, IS_BITMAP),
+#endif
+#ifdef DVI$_DEVDEPEND2
   DVI_ENT(DEVDEPEND2, 4, IS_BITMAP),
+#endif
+#ifdef DVI$_DEVICE_TYPE_NAME
   DVI_ENT(DEVICE_TYPE_NAME, 64, IS_STRING),
+#endif
+#ifdef DVI$_DEVLOCKNAM
   DVI_ENT(DEVLOCKNAM, 64, IS_STRING),
+#endif
+#ifdef DVI$_DEVNAM
   DVI_ENT(DEVNAM, 64, IS_STRING),
+#endif
+#ifdef DVI$_DEVSTS
   DVI_ENT(DEVSTS, 4, IS_BITMAP),
+#endif
+#ifdef DVI$_DEVTYPE
   DVI_ENT(DEVTYPE, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_DFS_ACCESS
   DVI_ENT(DFS_ACCESS, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_DISPLAY_DEVNAM
   DVI_ENT(DISPLAY_DEVNAM, 256, IS_STRING),
+#endif
+#ifdef DVI$_ERRCNT
   DVI_ENT(ERRCNT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_FREEBLOCKS
   DVI_ENT(FREEBLOCKS, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_FULLDEVNAM
   DVI_ENT(FULLDEVNAM, 64, IS_STRING),
+#endif
+#ifdef DVI$_HOST_AVAIL
   DVI_ENT(HOST_AVAIL, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_HOST_COUNT
   DVI_ENT(HOST_COUNT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_HOST_NAME
   DVI_ENT(HOST_NAME, 64, IS_STRING),
+#endif
+#ifdef DVI$_HOST_TYPE
   DVI_ENT(HOST_TYPE, 64, IS_STRING),
+#endif
+#ifdef DVI$_LOCKID
   DVI_ENT(LOCKID, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_LOGVOLNAM
   DVI_ENT(LOGVOLNAM, 64, IS_STRING),
+#endif
+#ifdef DVI$_MAXBLOCK
   DVI_ENT(MAXBLOCK, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_MAXFILES
   DVI_ENT(MAXFILES, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_MEDIA_ID
   DVI_ENT(MEDIA_ID, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_MEDIA_NAME
   DVI_ENT(MEDIA_NAME, 64, IS_STRING),
+#endif
+#ifdef DVI$_MEDIA_TYPE
   DVI_ENT(MEDIA_TYPE, 64, IS_STRING),
+#endif
+#ifdef DVI$_MOUNTCNT
   DVI_ENT(MOUNTCNT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_MSCP_UNIT_NUMBER
   DVI_ENT(MSCP_UNIT_NUMBER, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_NEXTDEVNAM
   DVI_ENT(NEXTDEVNAM, 64, IS_STRING),
+#endif
+#ifdef DVI$_OPCNT
   DVI_ENT(OPCNT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_OWNUIC
   DVI_ENT(OWNUIC, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_PID
   DVI_ENT(PID, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_RECSIZ
   DVI_ENT(RECSIZ, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_REFCNT
   DVI_ENT(REFCNT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_REMOTE_DEVICE
   DVI_ENT(REMOTE_DEVICE, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_ROOTDEVNAM
   DVI_ENT(ROOTDEVNAM, 64, IS_STRING),
+#endif
+#ifdef DVI$_SECTORS
   DVI_ENT(SECTORS, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_SERIALNUM
   DVI_ENT(SERIALNUM, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_SERVED_DEVICE
   DVI_ENT(SERVED_DEVICE, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_SHDW_CATCHUP_COPYING
   DVI_ENT(SHDW_CATCHUP_COPYING, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_SHDW_FAILED_MEMBER
   DVI_ENT(SHDW_FAILED_MEMBER, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_SHDW_MASTER
   DVI_ENT(SHDW_MASTER, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_SHDW_MASTER_NAME
   DVI_ENT(SHDW_MASTER_NAME, 64, IS_STRING),
+#endif
+#ifdef DVI$_SHDW_MEMBER
   DVI_ENT(SHDW_MEMBER, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_SHDW_MERGE_COPYING
   DVI_ENT(SHDW_MERGE_COPYING, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_SHDW_NEXT_MBR_NAME
   DVI_ENT(SHDW_NEXT_MBR_NAME, 64, IS_STRING),
+#endif
+#ifdef DVI$_STS
   DVI_ENT(STS, 4, IS_BITMAP),
+#endif
+#ifdef DVI$_TRACKS
   DVI_ENT(TRACKS, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TRANSCNT
   DVI_ENT(TRANSCNT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_ACCPORNAM
   DVI_ENT(TT_ACCPORNAM, 64, IS_STRING),
+#endif
+#ifdef DVI$_TT_CHARSET
   DVI_ENT(TT_CHARSET, 4, IS_BITMAP),
+#endif
+#ifdef DVI$_TT_CS_HANGUL
   DVI_ENT(TT_CS_HANGUL, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_CS_HANYU
   DVI_ENT(TT_CS_HANYU, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_CS_HANZI
   DVI_ENT(TT_CS_HANZI, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_CS_KANA
   DVI_ENT(TT_CS_KANA, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_CS_KANJI
   DVI_ENT(TT_CS_KANJI, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_CS_THAI
   DVI_ENT(TT_CS_THAI, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_PHYDEVNAM
   DVI_ENT(TT_PHYDEVNAM, 64, IS_STRING),
+#endif
+#ifdef DVI$_UNIT
   DVI_ENT(UNIT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_VOLCOUNT
   DVI_ENT(VOLCOUNT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_VOLNAM
   DVI_ENT(VOLNAM, 12, IS_STRING),
+#endif
+#ifdef DVI$_VOLNUMBER
   DVI_ENT(VOLNUMBER, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_VOLSETMEM
   DVI_ENT(VOLSETMEM, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_VPROT
   DVI_ENT(VPROT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_NOECHO
   DVI_ENT(TT_NOECHO, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_NOTYPEAHD
   DVI_ENT(TT_NOTYPEAHD, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_HOSTSYNC
   DVI_ENT(TT_HOSTSYNC, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_TTSYNC
   DVI_ENT(TT_TTSYNC, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_ESCAPE
   DVI_ENT(TT_ESCAPE, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_LOWER
   DVI_ENT(TT_LOWER, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_MECHTAB
   DVI_ENT(TT_MECHTAB, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_WRAP
   DVI_ENT(TT_WRAP, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_LFFILL
   DVI_ENT(TT_LFFILL, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_SCOPE
   DVI_ENT(TT_SCOPE, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_CRFILL
   DVI_ENT(TT_CRFILL, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_SETSPEED
   DVI_ENT(TT_SETSPEED, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_EIGHTBIT
   DVI_ENT(TT_EIGHTBIT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_MBXDSABL
   DVI_ENT(TT_MBXDSABL, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_READSYNC
   DVI_ENT(TT_READSYNC, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_MECHFORM
   DVI_ENT(TT_MECHFORM, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_NOBRDCST
   DVI_ENT(TT_NOBRDCST, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_HALFDUP
   DVI_ENT(TT_HALFDUP, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_MODEM
   DVI_ENT(TT_MODEM, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_OPER
   DVI_ENT(TT_OPER, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_LOCALECHO
   DVI_ENT(TT_LOCALECHO, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_AUTOBAUD
   DVI_ENT(TT_AUTOBAUD, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_PAGE
   DVI_ENT(TT_PAGE, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_HANGUP
   DVI_ENT(TT_HANGUP, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_MODHANGUP
   DVI_ENT(TT_MODHANGUP, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_BRDCSTMBX
   DVI_ENT(TT_BRDCSTMBX, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_DMA
   DVI_ENT(TT_DMA, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_ALTYPEAHD
   DVI_ENT(TT_ALTYPEAHD, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_ANSICRT
   DVI_ENT(TT_ANSICRT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_REGIS
   DVI_ENT(TT_REGIS, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_AVO
   DVI_ENT(TT_AVO, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_EDIT
   DVI_ENT(TT_EDIT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_BLOCK
   DVI_ENT(TT_BLOCK, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_DECCRT
   DVI_ENT(TT_DECCRT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_EDITING
   DVI_ENT(TT_EDITING, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_INSERT
   DVI_ENT(TT_INSERT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_DIALUP
   DVI_ENT(TT_DIALUP, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_SECURE
   DVI_ENT(TT_SECURE, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_FALLBACK
   DVI_ENT(TT_FALLBACK, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_DISCONNECT
   DVI_ENT(TT_DISCONNECT, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_PASTHRU
   DVI_ENT(TT_PASTHRU, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_SIXEL
   DVI_ENT(TT_SIXEL, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_PRINTER
   DVI_ENT(TT_PRINTER, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_APP_KEYPAD
   DVI_ENT(TT_APP_KEYPAD, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_DRCS
   DVI_ENT(TT_DRCS, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_SYSPWD
   DVI_ENT(TT_SYSPWD, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_DECCRT2
   DVI_ENT(TT_DECCRT2, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_DECCRT3
   DVI_ENT(TT_DECCRT3, 4, IS_LONGWORD),
+#endif
+#ifdef DVI$_TT_DECCRT4
   DVI_ENT(TT_DECCRT4, 4, IS_LONGWORD),
+#endif
   {NULL, 0, 0, 0}
 };
 
 
 struct GenericID MountList[] =
 {
-  MOUNT_ENT(ACCESSED
+  MNT_ENT(ACCESSED, 4, IS_LONGWORD),
+  MNT_ENT(BLOCKSIZE, 4, IS_LONGWORD),
+  MNT_ENT(COMMENT, 78, IS_STRING),
+  MNT_ENT(DENSITY, 4, IS_LONGWORD),
+  MNT_ENT(DEVNAM, 64, IS_STRING),
+  MNT_ENT(EXTENSION, 4, IS_LONGWORD),
+  MNT_ENT(EXTENT, 4, IS_LONGWORD),
+  MNT_ENT(FILEID, 4, IS_LONGWORD),
+  MNT_ENT(FLAGS, 8, IS_BITMAP),
+  MNT_ENT(LIMIT, 4, IS_LONGWORD),
+  MNT_ENT(LOGNAM, 64, IS_STRING),
+  MNT_ENT(OWNER, 4, IS_LONGWORD),
+  MNT_ENT(PROCESSOR, 255, IS_STRING),
+  MNT_ENT(QUOTA, 4, IS_LONGWORD),
+  MNT_ENT(RECORDSIZ, 4, IS_LONGWORD),
+  MNT_ENT(SHAMEM, 64, IS_STRING),
+  MNT_ENT(SHANAM, 64, IS_STRING),
+  MNT_ENT(UNDEFINED_FAT, 4, IS_LONGWORD),
+  MNT_ENT(VOLNAM, 64, IS_STRING),
+  MNT_ENT(VOLSET, 128, IS_STRING),
+  MNT_ENT(VPROT, 4, IS_LONGWORD),
+  MNT_ENT(WINDOW, 4, IS_LONGWORD),
   {NULL, 0, 0, 0}
 };
-  
+
+struct GenericID InitList[] =
+{
+  INI_ENT(ACCESSED, 4, IS_LONGWORD),
+  INI_ENT(BADBLOCKS_LBN, 512, IS_STRING),
+  INI_ENT(BADBLOCKS_SEC, 512, IS_STRING),
+  INI_ENT(CLUSTERSIZE, 4, IS_LONGWORD),
+  INI_ENT(COMPACTION, 4, IS_LONGWORD),
+  INI_ENT(NO_COMPACTION, 4, IS_LONGWORD),
+  INI_ENT(DENSITY, 4, IS_ENUM),
+  INI_ENT(DIRECTORIES, 4, IS_LONGWORD),
+  INI_ENT(ERASE, 4, IS_LONGWORD),
+  INI_ENT(NO_ERASE, 4, IS_LONGWORD),
+  INI_ENT(EXTENSION, 4, IS_LONGWORD),
+  INI_ENT(FPROT, 4, IS_LONGWORD),
+  INI_ENT(HEADERS, 4, IS_LONGWORD),
+  INI_ENT(HIGHWATER, 4, IS_LONGWORD),
+  INI_ENT(NO_HIGHWATER, 4, IS_LONGWORD),
+  INI_ENT(HOMEBLOCKS, 4, IS_ENUM),
+  INI_ENT(INDEX_BEGINNING, 4, IS_LONGWORD),
+  INI_ENT(INDEX_BLOCK, 4, IS_LONGWORD),
+  INI_ENT(INDEX_END, 4, IS_LONGWORD),
+  INI_ENT(INDEX_MIDDLE, 4, IS_LONGWORD),
+  INI_ENT(INTERCHANGE, 4, IS_LONGWORD),
+  INI_ENT(LABEL_ACCESS, 1, IS_STRING),
+  INI_ENT(LABEL_VOLO, 14, IS_STRING),
+  INI_ENT(MAXFILES, 4, IS_LONGWORD),
+  INI_ENT(OVR_ACCESS, 4, IS_LONGWORD),
+  INI_ENT(NO_OVR_ACCESS, 4, IS_LONGWORD),
+  INI_ENT(OVR_EXP, 4, IS_LONGWORD),
+  INI_ENT(NO_OVR_EXP, 4, IS_LONGWORD),
+  INI_ENT(OVR_VOLO, 4, IS_LONGWORD),
+  INI_ENT(NO_OVR_VOLO, 4, IS_LONGWORD),
+  INI_ENT(OWNER, 4, IS_LONGWORD),
+  INI_ENT(READCHECK, 4, IS_LONGWORD),
+  INI_ENT(NO_READCHECK, 4, IS_LONGWORD),
+  INI_ENT(SIZE, 4, IS_LONGWORD),
+  INI_ENT(STRUCTURE_LEVEL_1, 4, IS_LONGWORD),
+  INI_ENT(STRUCTURE_LEVEL_2, 4, IS_LONGWORD),
+  INI_ENT(USER_NAME, 12, IS_STRING),
+  INI_ENT(VERIFIED, 4, IS_LONGWORD),
+  INI_ENT(NO_VERIFIED, 4, IS_LONGWORD),
+  INI_ENT(VPROT, 4, IS_LONGWORD),
+  INI_ENT(WINDOW, 4, IS_LONGWORD),
+  INI_ENT(WRITECHECK, 4, IS_LONGWORD),
+  INI_ENT(NO_WRITECHECK, 4, IS_LONGWORD),
+  {NULL, 0, 0, 0, 0}
+};
+
 char *MonthNames[12] = {
   "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
   "Oct", "Nov", "Dec"} ;
@@ -1872,35 +2206,83 @@ dev_type_decode(SV *TypeNameSV)
   return TypeCode;
 }
 
-/* Take a pointer to a bitmap hash (like decode_bitmap gives) and turn it */
-/* into an integer */
-int
-generic_bitmap_encode(HV * FlagHV, int ItemCode)
+/* Take a pointer to a bitmap hash (like decode_bitmap gives), an item */
+/* code, and a pointer to the output buffer and encode the bitmap */
+void
+generic_bitmap_encode(HV * FlagHV, int ItemCode, void *Buffer)
 {
   char *FlagName;
   I32 FlagLen;
-  int EncodedValue = 0;
+  int *EncodedValue; /* Pointer to an integer
 
   /* Shut Dec C up */
   FlagName = NULL;
+
+  /* Buffer's a pointer to an integer array, really it is */
+  EncodedValue = Buffer;
 
   /* Initialize our hash iterator */
   hv_iterinit(FlagHV);
 
   /* Rip through the hash */
   while (hv_iternextsv(FlagHV, &FlagName, &FlagLen)) {
-  
+    
     switch (ItemCode) {
-/*    case QUI$_SEARCH_FLAGS:
-      BME_D(SEARCH_WILDCARD);
-      break; */
+    case MNT$_FLAGS:
+      BME_D(CLUSTER);
+      BME_D(FOREIGN);
+      BME_D(GROUP);
+/*      BME_D(INCLUDE); */
+      BME_D(INIT_CONT);
+      BME_D(MESSAGE);
+      BME_D(MULTI_VOL);
+      BME_D(NOASSIST);
+      BME_D(NOAUTO);
+      BME_D(NOCACHE);
+      BME_D(NOCOPY);
+      BME_D(NODISKQ);
+      BME_D(NOHDR3);
+      BME_D(NOLABEL);
+      BME_D(NOMNTVER);
+      BME_D(NOREBUILD);
+      BME_D(NOUNLOAD);
+      BME_D(NOWRITE);
+      BME_D(OVR_ACCESS);
+      BME_D(OVR_EXP);
+      BME_D(OVR_IDENT);
+      BME_D(OVR_LOCK);
+      BME_D(OVR_SETID);
+      BME_D(OVR_SHAMEM);
+      BME_D(OVR_VOLO);
+      BME_D(READCHECK);
+      BME_D(SHARE);
+      BME_D(SYSTEM);
+      BME_D(TAPE_DATA_WRITE);
+      BME_D(WRITECHECK);
+      BME_D(WRITETHRU);
+      BME2_D(CDROM);
+      BME2_D(COMPACTION);
+      BME2_D(DISKQ);
+      BME2_D(DSI);
+      BME2_D(INCLUDE);
+      BME2_D(NOCOMPACTION);
+      BME2_D(OVR_LIMITED_SEARCH);
+      BME2_D(OVR_NOFE);
+      BME2_D(OVR_SECURITY);
+      BME2_D(SUBSYSTEM);
+      BME2_D(XAR);
+      break;
+    case SYSCALL_DISMOU:
+      DMT_D(ABORT);
+      DMT_D(CLUSTER);
+      DMT_D(NOUNLOAD);
+      DMT_D(OVR_CHECKS);
+      DMT_D(UNIT);
+      DMT_D(UNLOAD);
     default:
       croak("Invalid item specified");
     }
   }
-  
-  return EncodedValue;
-  
 }
 
 /* Take a pointer to an itemlist, a hashref, and some flags, and build up */
@@ -1920,67 +2302,80 @@ int build_itemlist(struct GenericID InfoList[], ITMLST *ItemList, HV *HashRef)
   unsigned short *TempLen;
   int ItemCode;
   char *TempBuffer;
+  int BufferLength;
   long TempLong;
   struct dsc$descriptor_s TimeStringDesc;
   int Status;
+  int CopyData;
 
   for(i = 0; InfoList[i].GenericName; i++) {
     TempNameLen = strlen(InfoList[i].GenericName);
-    if (hv_exists(HashRef, InfoList[i].GenericName, TempNameLen)) {
+    /* If they've provided the info, or we're going to get it back, we */
+    /* allocate some space */
+    if ((hv_exists(HashRef, InfoList[i].GenericName, TempNameLen)) ||
+        (InfoList[i].InOrOut & IS_OUTPUT)) {
       /* Figure out some stuff. Avoids duplication, and makes the macro */
       /* expansion of init_itemlist a little easier */
       ItemCode = InfoList[i].SyscallValue;
+      CopyData = InfoList[i].InOrOut & IS_INPUT;
       switch(InfoList[i].ReturnType) {
         /* Quadwords are treated as strings for right now */
       case IS_QUADWORD:
       case IS_STRING:
-        TempSV = *hv_fetch(HashRef,
-                           InfoList[i].GenericName,
-                           TempNameLen, FALSE);
-        TempCharPointer = SvPV(TempSV, TempStrLen);
-        
         /* Allocate us some buffer space */
-        New(NULL, TempBuffer, InfoList[i].BufferLen, char);
+        Newz(NULL, TempBuffer, InfoList[i].BufferLen, char);
         Newz(NULL, TempLen, 1, unsigned short);
+
+        BufferLength = InfoList[i].BufferLen;
         
         /* Set the string buffer to spaces */
         memset(TempBuffer, ' ', InfoList[i].BufferLen);
         
-        /* If there was something in the SV, then copy it over */
-        if (TempStrLen) {
-          Copy(TempCharPointer, TempBuffer, TempStrLen <
-               InfoList[i].BufferLen ? TempStrLen :
-               InfoList[i].BufferLen, char);
+        /* If we're copying data, then fetch it and stick it in the buffer */
+        if (CopyData) {
+          TempSV = *hv_fetch(HashRef,
+                             InfoList[i].GenericName,
+                             TempNameLen, FALSE);
+          TempCharPointer = SvPV(TempSV, TempStrLen);
+          
+          /* If there was something in the SV, then copy it over */
+          if (TempStrLen) {
+            BufferLength = TempStrLen < InfoList[i].BufferLen
+                         ? TempStrLen : InfoList[i].BufferLen;
+            Copy(TempCharPointer, TempBuffer, BufferLength, char);
+          }
         }
-        
+
         init_itemlist(&ItemList[ItemListIndex],
-                      InfoList[i].BufferLen,
+                      BufferLength,
                       ItemCode,
                       TempBuffer,
                       TempLen);
         break;
       case IS_VMSDATE:
-        TempSV = *hv_fetch(HashRef,
-                           InfoList[i].GenericName,
-                           TempNameLen, FALSE);
-        TempCharPointer = SvPV(TempSV, TempStrLen);
-        
         /* Allocate us some buffer space */
-        New(NULL, TempBuffer, InfoList[i].BufferLen, char);
+        Newz(NULL, TempBuffer, InfoList[i].BufferLen, char);
         Newz(NULL, TempLen, 1, unsigned short);
         
-        /* Fill in the time string descriptor */
-        TimeStringDesc.dsc$a_pointer = TempCharPointer;
-        TimeStringDesc.dsc$w_length = TempStrLen;
-        TimeStringDesc.dsc$b_dtype = DSC$K_DTYPE_T;
-        TimeStringDesc.dsc$b_class = DSC$K_CLASS_S;
-        
-        /* Convert from an ascii rep to a VMS quadword date structure */
-        Status = sys$bintim(&TimeStringDesc, TempBuffer);
-        if (Status != SS$_NORMAL) {
-          croak("Error converting time!");
+        if (CopyData) {
+          TempSV = *hv_fetch(HashRef,
+                             InfoList[i].GenericName,
+                             TempNameLen, FALSE);
+          TempCharPointer = SvPV(TempSV, TempStrLen);
+          
+          /* Fill in the time string descriptor */
+          TimeStringDesc.dsc$a_pointer = TempCharPointer;
+          TimeStringDesc.dsc$w_length = TempStrLen;
+          TimeStringDesc.dsc$b_dtype = DSC$K_DTYPE_T;
+          TimeStringDesc.dsc$b_class = DSC$K_CLASS_S;
+          
+          /* Convert from an ascii rep to a VMS quadword date structure */
+          Status = sys$bintim(&TimeStringDesc, TempBuffer);
+          if (Status != SS$_NORMAL) {
+            croak("Error converting time!");
+          }
         }
-        
+
         init_itemlist(&ItemList[ItemListIndex],
                       InfoList[i].BufferLen,
                       ItemCode,
@@ -1989,18 +2384,19 @@ int build_itemlist(struct GenericID InfoList[], ITMLST *ItemList, HV *HashRef)
         break;
         
       case IS_LONGWORD:
-        TempSV = *hv_fetch(HashRef,
-                           InfoList[i].GenericName,
-                           TempNameLen, FALSE);
-        TempLong = SvIVX(TempSV);
-        
         /* Allocate us some buffer space */
-        New(NULL, TempBuffer, InfoList[i].BufferLen, char);
+        Newz(NULL, TempBuffer, InfoList[i].BufferLen, char);
         Newz(NULL, TempLen, 1, unsigned short);
         
-        
-        /* Set the value */
-        *TempBuffer = TempLong;
+        if (CopyData) {
+          TempSV = *hv_fetch(HashRef,
+                             InfoList[i].GenericName,
+                             TempNameLen, FALSE);
+          TempLong = SvIVX(TempSV);
+          
+          /* Set the value */
+          *TempBuffer = TempLong;
+        }
         
         init_itemlist(&ItemList[ItemListIndex],
                       InfoList[i].BufferLen,
@@ -2010,26 +2406,26 @@ int build_itemlist(struct GenericID InfoList[], ITMLST *ItemList, HV *HashRef)
         break;
         
       case IS_BITMAP:
-        TempSV = *hv_fetch(HashRef,
-                           InfoList[i].GenericName,
-                           TempNameLen, FALSE);
-        
-        /* Is the SV an integer? If so, then we'll use that value. */
-        /* Otherwise we'll assume that it's a hashref of the sort that */
-        /* generic_bitmap_decode gives */
-        if (SvIOK(TempSV)) {
-          TempLong = SvIVX(TempSV);
-        } else {
-          TempLong = generic_bitmap_encode((HV *)SvRV(TempSV), ItemCode);
-        }
-        
         /* Allocate us some buffer space */
-        New(NULL, TempBuffer, InfoList[i].BufferLen, char);
+        Newz(NULL, TempBuffer, InfoList[i].BufferLen, char);
         Newz(NULL, TempLen, 1, unsigned short);
         
-        
-        /* Set the value */
-        *TempBuffer = TempLong;
+        if (CopyData) {
+          TempSV = *hv_fetch(HashRef,
+                             InfoList[i].GenericName,
+                             TempNameLen, FALSE);
+          
+          /* Is the SV an integer? If so, then we'll use that value. */
+          /* Otherwise we'll assume that it's a hashref of the sort that */
+          /* generic_bitmap_decode gives */
+          if (SvIOK(TempSV)) {
+            TempLong = SvIVX(TempSV);
+            /* Set the value */
+            *TempBuffer = TempLong;
+          } else {
+            generic_bitmap_encode((HV *)SvRV(TempSV), ItemCode, TempBuffer);
+          }
+        }
         
         init_itemlist(&ItemList[ItemListIndex],
                       InfoList[i].BufferLen,
@@ -2247,7 +2643,7 @@ device_info(device_name)
   }
   
   /* Make the GETDVIW call */
-  status = sys$getdviw(NULL, NULL, &DevNameDesc, ListOItems, NULL, NULL, 0);
+  status = sys$getdviw(0, 0, &DevNameDesc, ListOItems, NULL, NULL, NULL, NULL);
   /* Did it go OK? */
   if (status == SS$_NORMAL) {
     /* Looks like it */
@@ -2498,6 +2894,144 @@ decode_device_bitmap(InfoName, BitmapValue)
     XPUSHs(newRV((SV *)AllPurposeHV));
   } else {
     XPUSHs(&sv_undef);
+  }
+}
+
+SV *
+initialize(DevName, VolName, ItemHash=&sv_undef)
+     SV *DevName
+     SV *VolName
+     SV *ItemHash
+   CODE:
+{
+  ITMLST InitItemList[99];
+  int Status, NumItems = 0;
+  unsigned int DevNameLen, VolNameLen;
+  struct dsc$descriptor_s DevNameDesc;
+  struct dsc$descriptor_s VolNameDesc;
+  
+  DevNameDesc.dsc$a_pointer = SvPV(DevName, DevNameLen);
+  DevNameDesc.dsc$w_length = DevNameLen;
+  DevNameDesc.dsc$b_dtype = DSC$K_DTYPE_T;
+  DevNameDesc.dsc$b_class = DSC$K_CLASS_S;
+
+  VolNameDesc.dsc$a_pointer = SvPV(VolName, VolNameLen);
+  VolNameDesc.dsc$w_length = VolNameLen;
+  VolNameDesc.dsc$b_dtype = DSC$K_DTYPE_T;
+  VolNameDesc.dsc$b_class = DSC$K_CLASS_S;
+
+  /* Did we get an item list hash? */
+  if (ItemHash != &sv_undef) {
+    /* Okay, then is it a hash ref? */
+    if (SvROK(ItemHash)) {
+      if (SvTYPE(SvRV(ItemHash)) == SVt_PVHV) {
+        /* Hey, it's a hashref. Go hit build_itemlist */
+        /* Clear the item list */
+        memset(InitItemList, 0, sizeof(ITMLST) * 99);
+        NumItems = build_itemlist(InitList, InitItemList,
+                                  (HV *)SvRV(ItemHash));
+      } else {
+        croak("Arg 3 should be a hash reference");
+      }
+    } else {
+      croak("Arg 3 should be a hash reference");
+    }
+  }
+    
+  if (NumItems) {
+    Status = sys$init_vol(&DevNameDesc, &VolNameDesc, InitItemList);
+    tear_down_itemlist(InitItemList, NumItems);
+  } else {
+    Status = sys$init_vol(&DevNameDesc, &VolNameDesc, NULL);
+  }
+  if (SS$_NORMAL == Status) {
+    XSRETURN_YES;
+  } else {
+    SETERRNO(EVMSERR, Status);
+    XSRETURN_UNDEF;
+  }
+}
+
+SV *
+dismount(DevName, ItemHash=&sv_undef)
+     SV *DevName
+     SV *ItemHash
+   CODE:
+{
+  ITMLST InitItemList[99];
+  int Status, NumItems = 0;
+  int Flags = 0;
+  unsigned int DevNameLen, VolNameLen;
+  struct dsc$descriptor_s DevNameDesc;
+  struct dsc$descriptor_s VolNameDesc;
+  
+  DevNameDesc.dsc$a_pointer = SvPV(DevName, DevNameLen);
+  DevNameDesc.dsc$w_length = DevNameLen;
+  DevNameDesc.dsc$b_dtype = DSC$K_DTYPE_T;
+  DevNameDesc.dsc$b_class = DSC$K_CLASS_S;
+
+  /* Did we get an item list hash? */
+  if (ItemHash != &sv_undef) {
+    /* Okay, then is it a hash ref? */
+    if (SvROK(ItemHash)) {
+      if (SvTYPE(SvRV(ItemHash)) == SVt_PVHV) {
+        /* Hey, it's a hashref. Go turn it into an integer */
+        generic_bitmap_encode((HV *)SvRV(ItemHash), SYSCALL_DISMOU, &Flags);
+      } else {
+        croak("Arg 2 should be a hash reference");
+      }
+    } else {
+      croak("Arg 2 should be a hash reference");
+    }
+  }
+    
+  Status = sys$dismou(&DevNameDesc, Flags);
+  if (SS$_NORMAL == Status) {
+    XSRETURN_YES;
+  } else {
+    SETERRNO(EVMSERR, Status);
+    XSRETURN_UNDEF;
+  }
+}
+
+SV *
+mount(ItemHash=&sv_undef)
+     SV *ItemHash
+   CODE:
+{
+  ITMLST MountItemList[99];
+  int Status, NumItems = 0;
+  /* Did we get an item list hash? */
+  if (ItemHash != &sv_undef) {
+    /* Okay, then is it a hash ref? */
+    if (SvROK(ItemHash)) {
+      if (SvTYPE(SvRV(ItemHash)) == SVt_PVHV) {
+        /* Hey, it's a hashref. Go hit build_itemlist */
+        /* Clear the item list */
+        Zero(MountItemList, 99, ITMLST);
+        NumItems = build_itemlist(MountList, MountItemList,
+                                  (HV *)SvRV(ItemHash));
+      } else {
+        croak("mount requires a hash reference");
+      }
+    } else {
+      croak("mount requires a hash reference");
+    }
+  }
+    
+  if (NumItems) {
+    Status = sys$mount(MountItemList);
+    tear_down_itemlist(MountItemList, NumItems);
+  } else {
+    SETERRNO(EVMSERR, SS$_BADPARAM);
+    XSRETURN_UNDEF;
+  }
+
+  if (SS$_NORMAL == Status) {
+    XSRETURN_YES;
+  } else {
+    SETERRNO(EVMSERR, Status);
+    XSRETURN_UNDEF;
   }
 }
 

@@ -15,7 +15,7 @@ require AutoLoader;
 @EXPORT_OK = qw(&device_types &device_classes &device_list &device_info
                 &decode_device_bitmap &device_info_item &mount &dismount
                 &allocate &deallocate &initialize);
-$VERSION = '0.02';
+$VERSION = '0.05';
 
 bootstrap VMS::Device $VERSION;
 
@@ -39,12 +39,11 @@ VMS::Device - Perl extension for blah blah blah
   @dev_list = device_list($DeviceName[, $DeviceClass[, $DeviceType]]);
   $DevInfoHashRef = device_info($DeviceName);
   $BitmapHashRef = decode_device_bitmap($InfoName, $BitmapValue)
-  $Value = device_info_item($DevName, $ItemName); [Unimplemented]
-  $Status = mount($DevName[, \%Device_properties]); [Unimplemented]
+  $Status = mount(\%Device_properties);
   $Status = dismount($DevName[, \%Dismount_flags]); [Unimplemented]
   $DeviceAllocated = allocate($DevName[, $FirstAvail[, $AccMode]]);
   $Status = deallocate($DevName[, $AccMode]);
-  $Status = initialize($DevName[, $VolumeName[, \%DevProperties]]) [Unimplemented]
+  $Status = initialize($DevName[, $VolumeName[, \%DevProperties]]);
 
 =head1 DESCRIPTION
 
@@ -88,15 +87,11 @@ returned for that particular item, and decodes it. Each element in the
 returned hash is equivalent to one of the bits in the integer--its value
 will be true or false depending on the setting of the bit.
 
-=item device_info_item
-
-This function returns a single piece of information about the device you
-asked about.
-
 =item mount
 
-C<mount> takes a device name and a reference to a hash with the parameters
-for the mount, and attempts to mount the device.
+C<mount> takes a reference to a hash with the parameters for the mount, and
+attempts to mount the device. At the very least you want a C<DEVNAM>
+parameter to specify the device being mounted.
 
 =item dismount
 

@@ -1,6 +1,6 @@
 README for VMS::Device
 
-Copyright (c) 1998 Dan Sugalski
+Copyright (c) 1998 Dan Sugalski <sugalskd@ous.edu>
 
 You may distribute under the terms of the Artistic License, as distributed
 with Perl.
@@ -18,6 +18,6 @@ mms install
 
 to install it.
 
-This beta release only has the device list, device info, allocate, and
-deallocate functions implemented. (as well as some basic list functions,
-but they're not that interesting)
+This beta release is fully functional, but not thoroughly tested. It may
+well misbehave under some circumstances, leak memory, or die gracelessly
+when passed truly bogus parameters. Use with appropriate care.

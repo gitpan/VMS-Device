@@ -22,3 +22,18 @@ Revision history for Perl extension VMS::Device.
     - Fixed the example for total free blocks
     - #ifdef'd all the device types and classes. (Yay, perl! :) Should
       function much better on non-alpha non-7.1 systems.
+
+0.03  Mon Sep 28 10:48:43 1998
+    - Quick fix to the $GETDVIW call--I was leaving off an optional
+      trailing parameter, and it bites folks on some platforms
+    - Added in #ifdefs for all the $GETDVI items. I think they're all valid
+      on all versions of VMS, but it can't hurt to be careful.
+
+0.04  Mon Sep 28 15:50:12 1998
+    - Added in code for initialize()
+
+0.05  Wed Sep 30 20:36:12 1998
+    - Added code for mount() and, after way too long a struggle, got it
+      working. Now module's completely implemented, though error checking
+      and the like could stand to be beefed up. (Docs are still lousy too,
+      alas)
