@@ -1,0 +1,7 @@
+CHANGES
+Device.pm
+Device.xs
+Makefile.PL
+readme
+MANIFEST
+test.pl

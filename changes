@@ -1,0 +1,16 @@
+Revision history for Perl extension VMS::Device.
+
+0.01  Thu May 21 12:05:22 1998
+	- original version; created by h2xs 1.18
+
+0.01  Tue May 26 16:48:34 1998
+    - All the items for device_info are in, along with appropriate bitmap
+      decodes for them.
+
+0.01  Tue May 26 22:54:04 1998 (Or too damn late)
+    - Added device_list (sans special hash) and decode_device_bitmap
+
+0.01  Wed May 27 13:45:23 1998
+    - Changed device_list--no special hash. Now just takes two extra
+      parameters.
+    - Added device_classes and device_types functions. 
