@@ -48,21 +48,21 @@ typedef struct {char  *ItemName;         /* Name of the item we're getting */
 
 #define dev_bit_test(a, b, c) \
 { \
-    if (c && DEV$M_##b) \
+    if (c & DEV$M_##b) \
     hv_store(a, #b, strlen(#b), &sv_yes, 0); \
     else \
     hv_store(a, #b, strlen(#b), &sv_no, 0);}   
 
 #define ucb_bit_test(a, b, c) \
 { \
-    if (c && UCB$M_##b) \
+    if (c & UCB$M_##b) \
     hv_store(a, #b, strlen(#b), &sv_yes, 0); \
     else \
     hv_store(a, #b, strlen(#b), &sv_no, 0);}   
 
 #define ttc_bit_test(a, b, c) \
 { \
-    if (c && TTC$M_##b) \
+    if (c & TTC$M_##b) \
     hv_store(a, #b, strlen(#b), &sv_yes, 0); \
     else \
     hv_store(a, #b, strlen(#b), &sv_no, 0);}   

@@ -15,7 +15,7 @@ require AutoLoader;
 @EXPORT_OK = qw(&device_types &device_classes &device_list &device_info
                 &decode_device_bitmap &device_info_item &mount &dismount
                 &allocate &deallocate &initialize);
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 bootstrap VMS::Device $VERSION;
 
@@ -29,7 +29,7 @@ __END__
 
 =head1 NAME
 
-VMS::Device - Perl extension for blah blah blah
+VMS::Device - Perl interface to VMS device system calls ($GETDVI and friends)
 
 =head1 SYNOPSIS
 

@@ -37,3 +37,7 @@ Revision history for Perl extension VMS::Device.
       working. Now module's completely implemented, though error checking
       and the like could stand to be beefed up. (Docs are still lousy too,
       alas)
+
+0.06  Thu Mar 11 14:18:23
+    - Fixed a boneheaded error in decode_device_bitmaps. (& is bitwise and,
+      not &&. Bloody C...)
