@@ -21,6 +21,7 @@ extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "ppport.h"
 #ifdef __cplusplus
 }
 #endif
@@ -49,23 +50,23 @@ typedef struct {char  *ItemName;         /* Name of the item we're getting */
 #define dev_bit_test(a, b, c) \
 { \
     if (c & DEV$M_##b) \
-    hv_store(a, #b, strlen(#b), &sv_yes, 0); \
+    hv_store(a, #b, strlen(#b), &PL_sv_yes, 0); \
     else \
-    hv_store(a, #b, strlen(#b), &sv_no, 0);}   
+    hv_store(a, #b, strlen(#b), &PL_sv_no, 0);}   
 
 #define ucb_bit_test(a, b, c) \
 { \
     if (c & UCB$M_##b) \
-    hv_store(a, #b, strlen(#b), &sv_yes, 0); \
+    hv_store(a, #b, strlen(#b), &PL_sv_yes, 0); \
     else \
-    hv_store(a, #b, strlen(#b), &sv_no, 0);}   
+    hv_store(a, #b, strlen(#b), &PL_sv_no, 0);}   
 
 #define ttc_bit_test(a, b, c) \
 { \
     if (c & TTC$M_##b) \
-    hv_store(a, #b, strlen(#b), &sv_yes, 0); \
+    hv_store(a, #b, strlen(#b), &PL_sv_yes, 0); \
     else \
-    hv_store(a, #b, strlen(#b), &sv_no, 0);}   
+    hv_store(a, #b, strlen(#b), &PL_sv_no, 0);}   
 
 #define DVI_ENT(a, b, c) {#a, DVI$_##a, b, c, IS_OUTPUT}
 #define MNT_ENT(a, b, c) {#a, MNT$_##a, b, c, IS_INPUT}
@@ -2137,10 +2138,10 @@ decode_accmode(SV *AccMode)
 {
   char *AccessString;
 
-  if (AccMode == &sv_undef) {
+  if (AccMode == &PL_sv_undef) {
     return 0;
   } else {
-    AccessString = SvPV(AccMode, na);
+    AccessString = SvPV(AccMode, PL_na);
     if (!strcmp(AccessString, "KERNEL")) {
       return(PSL$C_KERNEL);
     }
@@ -2167,10 +2168,10 @@ dev_class_decode(SV *ClassNameSV)
   int i;
   
   /* Is it undef? If so, return 0 */
-  if (ClassNameSV == &sv_undef) {
+  if (ClassNameSV == &PL_sv_undef) {
     ClassCode = 0;
   } else {
-    ClassName = SvPV(ClassNameSV, na);
+    ClassName = SvPV(ClassNameSV, PL_na);
     for (i=0; DevClassList[i].DevClassName; i++) {
       if (!strcmp(ClassName, DevClassList[i].DevClassName)) {
         ClassCode = DevClassList[i].DevClassValue;
@@ -2191,10 +2192,10 @@ dev_type_decode(SV *TypeNameSV)
   int i;
   
   /* Is it undef? If so, return 0 */
-  if (TypeNameSV == &sv_undef) {
+  if (TypeNameSV == &PL_sv_undef) {
     TypeCode = 0;
   } else {
-    TypeName = SvPV(TypeNameSV, na);
+    TypeName = SvPV(TypeNameSV, PL_na);
     for (i=0; DevTypeList[i].DevTypeName; i++) {
       if (!strcmp(TypeName, DevTypeList[i].DevTypeName)) {
         TypeCode = DevTypeList[i].DevTypeValue;
@@ -2570,6 +2571,58 @@ enum_name(long DVI_entry, long val_to_deenum)
       break;
     }
     break;
+  case DVI$_DEVCLASS:
+    switch (val_to_deenum) {
+    case DC$_DISK:
+      sv_setpv(WorkingSV, "DISK");
+      break;
+    case DC$_TAPE:
+      sv_setpv(WorkingSV, "TAPE");
+      break;
+    case DC$_SCOM:
+      sv_setpv(WorkingSV, "SCOM");
+      break;
+    case DC$_CARD:
+      sv_setpv(WorkingSV, "CARD");
+      break;
+    case DC$_TERM:
+      sv_setpv(WorkingSV, "TERM");
+      break;
+    case DC$_LP:
+      sv_setpv(WorkingSV, "LP");
+      break;
+    case DC$_WORKSTATION:
+      sv_setpv(WorkingSV, "WORKSTATION");
+      break;
+    case DC$_REALTIME:
+      sv_setpv(WorkingSV, "REALTIME");
+      break;
+    case DC$_DECVOICE:
+      sv_setpv(WorkingSV, "DECVOICE");
+      break;
+    case DC$_AUDIO:
+      sv_setpv(WorkingSV, "AUDIO");
+      break;
+    case DC$_VIDEO:
+      sv_setpv(WorkingSV, "VIDEO");
+      break;
+    case DC$_BUS:
+      sv_setpv(WorkingSV, "BUS");
+      break;
+    case DC$_MAILBOX:
+      sv_setpv(WorkingSV, "MAILBOX");
+      break;
+    case DC$_REMCSL_STORAGE:
+      sv_setpv(WorkingSV, "REMCSL_STORAGE");
+      break;
+    case DC$_MISC:
+      sv_setpv(WorkingSV, "MISC");
+      break;
+    default:
+      sv_setpv(WorkingSV, "Unknown");
+      break;
+    }
+    break;
   default:
     sv_setpv(WorkingSV, "Unknown");
     break;
@@ -2658,7 +2711,7 @@ device_info(device_name)
         break;
       case IS_VMSDATE:
         sys$numtim(ReturnedTime, OurDataList[i].ReturnBuffer);
-        sprintf(AsciiTime, "%02hi-%s-%hi %02hi:%02hi:%02hi.%hi",
+        sprintf(AsciiTime, "%02hi-%s-%hi %02hi:%02hi:%02hi.%02hi",
                 ReturnedTime[2], MonthNames[ReturnedTime[1] - 1],
                 ReturnedTime[0], ReturnedTime[3], ReturnedTime[4],
                 ReturnedTime[5], ReturnedTime[6]);
@@ -2697,7 +2750,7 @@ device_info(device_name)
   } else {
     /* I think we failed */
     SETERRNO(EVMSERR, status);
-    ST(0) = &sv_undef;
+    ST(0) = &PL_sv_undef;
   }
   
   /* Free up our allocated memory */
@@ -2730,7 +2783,7 @@ device_classes()
 }
 
 void
-device_list(DeviceName,DevClass=&sv_undef,DevType=&sv_undef)
+device_list(DeviceName,DevClass=&PL_sv_undef,DevType=&PL_sv_undef)
      SV *DeviceName
      SV *DevClass
      SV *DevType
@@ -2893,12 +2946,12 @@ decode_device_bitmap(InfoName, BitmapValue)
   if (AllPurposeHV) {
     XPUSHs(newRV((SV *)AllPurposeHV));
   } else {
-    XPUSHs(&sv_undef);
+    XPUSHs(&PL_sv_undef);
   }
 }
 
 SV *
-initialize(DevName, VolName, ItemHash=&sv_undef)
+initialize(DevName, VolName, ItemHash=&PL_sv_undef)
      SV *DevName
      SV *VolName
      SV *ItemHash
@@ -2921,7 +2974,7 @@ initialize(DevName, VolName, ItemHash=&sv_undef)
   VolNameDesc.dsc$b_class = DSC$K_CLASS_S;
 
   /* Did we get an item list hash? */
-  if (ItemHash != &sv_undef) {
+  if (ItemHash != &PL_sv_undef) {
     /* Okay, then is it a hash ref? */
     if (SvROK(ItemHash)) {
       if (SvTYPE(SvRV(ItemHash)) == SVt_PVHV) {
@@ -2953,7 +3006,7 @@ initialize(DevName, VolName, ItemHash=&sv_undef)
 }
 
 SV *
-dismount(DevName, ItemHash=&sv_undef)
+dismount(DevName, ItemHash=&PL_sv_undef)
      SV *DevName
      SV *ItemHash
    CODE:
@@ -2971,7 +3024,7 @@ dismount(DevName, ItemHash=&sv_undef)
   DevNameDesc.dsc$b_class = DSC$K_CLASS_S;
 
   /* Did we get an item list hash? */
-  if (ItemHash != &sv_undef) {
+  if (ItemHash != &PL_sv_undef) {
     /* Okay, then is it a hash ref? */
     if (SvROK(ItemHash)) {
       if (SvTYPE(SvRV(ItemHash)) == SVt_PVHV) {
@@ -2995,14 +3048,14 @@ dismount(DevName, ItemHash=&sv_undef)
 }
 
 SV *
-mount(ItemHash=&sv_undef)
+mount(ItemHash=&PL_sv_undef)
      SV *ItemHash
    CODE:
 {
   ITMLST MountItemList[99];
   int Status, NumItems = 0;
   /* Did we get an item list hash? */
-  if (ItemHash != &sv_undef) {
+  if (ItemHash != &PL_sv_undef) {
     /* Okay, then is it a hash ref? */
     if (SvROK(ItemHash)) {
       if (SvTYPE(SvRV(ItemHash)) == SVt_PVHV) {
@@ -3036,7 +3089,7 @@ mount(ItemHash=&sv_undef)
 }
 
 SV *
-allocate(DevName, FirstAvail=&sv_undef, AccMode=&sv_undef)
+allocate(DevName, FirstAvail=&PL_sv_undef, AccMode=&PL_sv_undef)
      SV *DevName
      SV *FirstAvail
      SV *AccMode
@@ -3069,12 +3122,12 @@ allocate(DevName, FirstAvail=&sv_undef, AccMode=&sv_undef)
     ST(0) = sv_2mortal(newSVpv(ReturnName, ReturnNameLen));
   } else {
     SETERRNO(EVMSERR, Status);
-    ST(0) = &sv_undef;
+    ST(0) = &PL_sv_undef;
   }
 }
 
 SV *
-deallocate(DevName, AccMode=&sv_undef)
+deallocate(DevName, AccMode=&PL_sv_undef)
      SV *DevName
      SV *AccMode
    CODE:
@@ -3092,9 +3145,10 @@ deallocate(DevName, AccMode=&sv_undef)
 
   Status = sys$dalloc(&DevNameDesc, AccessMode);
   if (SS$_NORMAL == Status) {
-    ST(0) = &sv_yes;
+    ST(0) = &PL_sv_yes;
   } else {
     SETERRNO(EVMSERR, Status);
-    ST(0) = &sv_undef;
+    ST(0) = &PL_sv_undef;
   }
 }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    .a& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9 & ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17437 ...* ç17977 ANCESTOR: total=3, value 0 = 17425( ç17977 ANCESTOR: total=3, value 1 = 113( ç17977 ANCESTOR: total=3, value 2 = 263, çRebuild index WEBSITE for Record 17437 ...- çRebuild index ISUBJECT for Record 17437 ...e+ çRebuild index SOURCE for Record 17438 ...=& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9 & ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17438 ..., çRebuild index WEBSITE for Record 17438 ...- çRebuild index ISUBJECT for Record 17438 ...1+ çRebuild index SOURCE for Record 17439 ... & ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9 & ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17439 ...* ç25891 ANCESTOR: total=9, value 0 = 10270' ç25891 ANCESTOR: total=9, value 1 = 99l) ç25891 ANCESTOR: total=9, value 2 = 9678e( ç25891 ANCESTOR: total=9, value 3 = 153( ç25891 ANCESTOR: total=9, value 4 = 264* ç25891 ANCESTOR: total=9, value 5 = 22425* ç25891 ANCESTOR: total=9, value 6 = 39373( ç25891 ANCESTOR: total=9, value 7 = 269( ç25891 ANCESTOR: total=9, value 8 = 265+ ç38753 ANCESTOR: total=20, value 0 = 387525+ ç38753 ANCESTOR: total=20, value 1 = 100057+ ç38753 ANCESTOR: total=20, value 2 = 101837( ç38753 ANCESTOR: total=20, value 3 = 99* ç38753 ANCESTOR: total=20, value 4 = 9678) ç38753 ANCESTOR: total=20, value 5 = 1535) ç38753 ANCESTOR: total=20, value 6 = 264ç+ ç38753 ANCESTOR: total=20, value 7 = 22425ç+ ç38753 ANCESTOR: total=20, value 8 = 393735) ç38753 ANCESTOR: total=20, value 9 = 269e* ç38753 ANCESTOR: total=20, value 10 = 265, ç38753 ANCESTOR: total=20, value 11 = 10291, ç38753 ANCESTOR: total=20, value 12 = 38304, ç38753 ANCESTOR: total=20, value 13 = 24506, ç38753 ANCESTOR: total=20, value 14 = 11582, ç38753 ANCESTOR: total=20, value 15 = 11509, ç38753 ANCESTOR: total=20, value 16 = 37807, ç38753 ANCESTOR: total=20, value 17 = 11349* ç38753 ANCESTOR: total=20, value 18 = 183, ç38753 ANCESTOR: total=20, value 19 = 24795, çRebuild index WEBSITE for Record 17439 ...- çRebuild index ISUBJECT for Record 17439 ...a+ çRebuild index SOURCE for Record 17440 ... & ç8038 ANCESTOR: total=4, value 0 = 37% ç8038 ANCESTOR: total=4, value 1 = 9d& ç8038 ANCESTOR: total=4, value 2 = 20) ç8038 ANCESTOR: total=4, value 3 = 18500l, çRebuild index SUBJECT for Record 17440 ...' ç28031 ANCESTOR: total=7, value 0 = 89e' ç28031 ANCESTOR: total=7, value 1 = 88e( ç28031 ANCESTOR: total=7, value 2 = 261* ç28031 ANCESTOR: total=7, value 3 = 27283* ç28031 ANCESTOR: total=7, value 4 = 26310* ç28031 ANCESTOR: total=7, value 5 = 26297* ç28031 ANCESTOR: total=7, value 6 = 27012, çRebuild index WEBSITE for Record 17440 ...- çRebuild index ISUBJECT for Record 17440 ... + çRebuild index SOURCE for Record 17441 ...5& ç8038 ANCESTOR: total=4, value 0 = 37% ç8038 ANCESTOR: total=4, value 1 = 9u& ç8038 ANCESTOR: total=4, value 2 = 20) ç8038 ANCESTOR: total=4, value 3 = 18500=, çRebuild index SUBJECT for Record 17441 ..., çRebuild index WEBSITE for Record 17441 ...- çRebuild index ISUBJECT for Record 17441 ...a+ çRebuild index SOURCE for Record 17442 ...e& ç8038 ANCESTOR: total=4, value 0 = 37% ç8038 ANCESTOR: total=4, value 1 = 9 & ç8038 ANCESTOR: total=4, value 2 = 20) ç8038 ANCESTOR: total=4, value 3 = 18500R, çRebuild index SUBJECT for Record 17442 ...* ç27605 ANCESTOR: total=6, value 0 = 26306* ç27605 ANCESTOR: total=6, value 1 = 26379* ç27605 ANCESTOR: total=6, value 2 = 26297' ç27605 ANCESTOR: total=6, value 3 = 88=( ç27605 ANCESTOR: total=6, value 4 = 261* ç27605 ANCESTOR: total=6, value 5 = 27012, çRebuild index WEBSITE for Record 17442 ...- çRebuild index ISUBJECT for Record 17442 ... + çRebuild index SOURCE for Record 17443 ...4& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9f& ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17443 ...& ç99 ANCESTOR: total=7, value 0 = 9678% ç99 ANCESTOR: total=7, value 1 = 1534% ç99 ANCESTOR: total=7, value 2 = 264J' ç99 ANCESTOR: total=7, value 3 = 22425 ' ç99 ANCESTOR: total=7, value 4 = 39373n% ç99 ANCESTOR: total=7, value 5 = 269e% ç99 ANCESTOR: total=7, value 6 = 265O+ ç19850 ANCESTOR: total=10, value 0 = 263000+ ç19850 ANCESTOR: total=10, value 1 = 26297C( ç19850 ANCESTOR: total=10, value 2 = 88) ç19850 ANCESTOR: total=10, value 3 = 261n+ ç19850 ANCESTOR: total=10, value 4 = 27012O+ ç19850 ANCESTOR: total=10, value 5 = 26379t+ ç19850 ANCESTOR: total=10, value 6 = 19848l) ç19850 ANCESTOR: total=10, value 7 = 187a) ç19850 ANCESTOR: total=10, value 8 = 263 + ç19850 ANCESTOR: total=10, value 9 = 263811, çRebuild index WEBSITE for Record 17443 ...- çRebuild index ISUBJECT for Record 17443 ... + çRebuild index SOURCE for Record 17444 ... & ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9.& ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17444 ...& ç99 ANCESTOR: total=7, value 0 = 9678% ç99 ANCESTOR: total=7, value 1 = 153o% ç99 ANCESTOR: total=7, value 2 = 2644' ç99 ANCESTOR: total=7, value 3 = 224252' ç99 ANCESTOR: total=7, value 4 = 393733% ç99 ANCESTOR: total=7, value 5 = 2692% ç99 ANCESTOR: total=7, value 6 = 265r, çRebuild index WEBSITE for Record 17444 ...- çRebuild index ISUBJECT for Record 17444 ...a+ çRebuild index SOURCE for Record 17445 ...l& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9B& ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17445 ...' ç10183 ANCESTOR: total=8, value 0 = 99O) ç10183 ANCESTOR: total=8, value 1 = 9678t( ç10183 ANCESTOR: total=8, value 2 = 153( ç10183 ANCESTOR: total=8, value 3 = 264* ç10183 ANCESTOR: total=8, value 4 = 22425* ç10183 ANCESTOR: total=8, value 5 = 39373( ç10183 ANCESTOR: total=8, value 6 = 269( ç10183 ANCESTOR: total=8, value 7 = 265, çRebuild index WEBSITE for Record 17445 ...- çRebuild index ISUBJECT for Record 17445 ...t+ çRebuild index SOURCE for Record 17446 ... & ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9n& ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17446 ...+ ç24506 ANCESTOR: total=11, value 0 = 11582C+ ç24506 ANCESTOR: total=11, value 1 = 11509:+ ç24506 ANCESTOR: total=11, value 2 = 37807l+ ç24506 ANCESTOR: total=11, value 3 = 11349 ) ç24506 ANCESTOR: total=11, value 4 = 183T) ç24506 ANCESTOR: total=11, value 5 = 264B+ ç24506 ANCESTOR: total=11, value 6 = 39373O) ç24506 ANCESTOR: total=11, value 7 = 269:) ç24506 ANCESTOR: total=11, value 8 = 265t+ ç24506 ANCESTOR: total=11, value 9 = 22425 , ç24506 ANCESTOR: total=11, value 10 = 24795, çRebuild index WEBSITE for Record 17446 ...- çRebuild index ISUBJECT for Record 17446 ...6+ çRebuild index SOURCE for Record 17447 ... % ç864 ANCESTOR: total=4, value 0 = 37 $ ç864 ANCESTOR: total=4, value 1 = 9% ç864 ANCESTOR: total=4, value 2 = 20 ( ç864 ANCESTOR: total=4, value 3 = 18500, çRebuild index SUBJECT for Record 17447 ...% ç88 ANCESTOR: total=1, value 0 = 261u, çRebuild index WEBSITE for Record 17447 ...- çRebuild index ISUBJECT for Record 17447 ...u+ çRebuild index SOURCE for Record 17448 ...8& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 98& ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17448 ..., çRebuild index WEBSITE for Record 17448 ...- çRebuild index ISUBJECT for Record 17448 ... + çRebuild index SOURCE for Record 17449 ...l& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9ç& ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17449 ..., çRebuild index WEBSITE for Record 17449 ...- çRebuild index ISUBJECT for Record 17449 ...E+ çRebuild index SOURCE for Record 17450 ...R% ç864 ANCESTOR: total=4, value 0 = 37e$ ç864 ANCESTOR: total=4, value 1 = 9% ç864 ANCESTOR: total=4, value 2 = 20l( ç864 ANCESTOR: total=4, value 3 = 18500, çRebuild index SUBJECT for Record 17450 ...% ç88 ANCESTOR: total=1, value 0 = 261 , çRebuild index WEBSITE for Record 17450 ...- çRebuild index ISUBJECT for Record 17450 ... + çRebuild index SOURCE for Record 17451 ...N& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9u& ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17451 ...* ç17977 ANCESTOR: total=3, value 0 = 17425( ç17977 ANCESTOR: total=3, value 1 = 113( ç17977 ANCESTOR: total=3, value 2 = 263, çRebuild index WEBSITE for Record 17451 ...- çRebuild index ISUBJECT for Record 17451 ...l+ çRebuild index SOURCE for Record 17452 ...l& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9 & ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17452 ...( ç211 ANCESTOR: total=9, value 0 = 10183% ç211 ANCESTOR: total=9, value 1 = 99.' ç211 ANCESTOR: total=9, value 2 = 96781& ç211 ANCESTOR: total=9, value 3 = 153& ç211 ANCESTOR: total=9, value 4 = 264( ç211 ANCESTOR: total=9, value 5 = 22425( ç211 ANCESTOR: total=9, value 6 = 39373& ç211 ANCESTOR: total=9, value 7 = 269& ç211 ANCESTOR: total=9, value 8 = 265, çRebuild index WEBSITE for Record 17452 ...- çRebuild index ISUBJECT for Record 17452 ...e+ çRebuild index SOURCE for Record 17453 ... & ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9=& ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17453 ...' ç10183 ANCESTOR: total=8, value 0 = 99o) ç10183 ANCESTOR: total=8, value 1 = 9678o( ç10183 ANCESTOR: total=8, value 2 = 153( ç10183 ANCESTOR: total=8, value 3 = 264* ç10183 ANCESTOR: total=8, value 4 = 22425* ç10183 ANCESTOR: total=8, value 5 = 39373( ç10183 ANCESTOR: total=8, value 6 = 269( ç10183 ANCESTOR: total=8, value 7 = 265+ ç34392 ANCESTOR: total=11, value 0 = 115825+ ç34392 ANCESTOR: total=11, value 1 = 115095+ ç34392 ANCESTOR: total=11, value 2 = 378075+ ç34392 ANCESTOR: total=11, value 3 = 113495) ç34392 ANCESTOR: total=11, value 4 = 1838) ç34392 ANCESTOR: total=11, value 5 = 264ç+ ç34392 ANCESTOR: total=11, value 6 = 393738) ç34392 ANCESTOR: total=11, value 7 = 269ç) ç34392 ANCESTOR: total=11, value 8 = 265 + ç34392 ANCESTOR: total=11, value 9 = 22425a, ç34392 ANCESTOR: total=11, value 10 = 24795, çRebuild index WEBSITE for Record 17453 ...- çRebuild index ISUBJECT for Record 17453 ...S+ çRebuild index SOURCE for Record 17454 ...t& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9 & ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17454 ...+ ç11218 ANCESTOR: total=15, value 0 = 24353T( ç11218 ANCESTOR: total=15, value 1 = 84( ç11218 ANCESTOR: total=15, value 2 = 83) ç11218 ANCESTOR: total=15, value 3 = 100N) ç11218 ANCESTOR: total=15, value 4 = 262 * ç11218 ANCESTOR: total=15, value 5 = 5553+ ç11218 ANCESTOR: total=15, value 6 = 26340u+ ç11218 ANCESTOR: total=15, value 7 = 262978( ç11218 ANCESTOR: total=15, value 8 = 88) ç11218 ANCESTOR: total=15, value 9 = 261S, ç11218 ANCESTOR: total=15, value 10 = 27012, ç11218 ANCESTOR: total=15, value 11 = 26314* ç11218 ANCESTOR: total=15, value 12 = 169) ç11218 ANCESTOR: total=15, value 13 = 61 , ç11218 ANCESTOR: total=15, value 14 = 11262, çRebuild index WEBSITE for Record 17454 ...- çRebuild index ISUBJECT for Record 17454 ...l+ çRebuild index SOURCE for Record 17455 ...a& ç1139 ANCESTOR: total=3, value 0 = 37% ç1139 ANCESTOR: total=3, value 1 = 9 & ç1139 ANCESTOR: total=3, value 2 = 20, çRebuild index SUBJECT for Record 17455 ...' ç120 ANCESTOR: total=13, value 0 = 126 ) ç120 ANCESTOR: total=13, value 1 = 24225 ' ç120 ANCESTOR: total=13, value 2 = 213 ' ç120 ANCESTOR: total=13, value 3 = 100 ' ç120 ANCESTOR: total=13, value 4 = 262 ) ç120 ANCESTOR: total=13, value 5 = 13210e) ç120 ANCESTOR: total=13, value 6 = 13372 ' ç120 ANCESTOR: total=13, value 7 = 2479& ç120 ANCESTOR: total=13, value 8 = 70) ç120 ANCESTOR: total=13, value 9 = 11087C( ç120 ANCESTOR: total=13, value 10 = 176* ç120 ANCESTOR: total=13, value 11 = 11059' ç120 ANCESTOR: total=13, value 12 = 61O, çRebuild index WEBSITE for Record 17455 ...- çRebuild index ISUBJECT for Record 17455 ...a+ çRebuild index SOURCE for Record 17456 ... & ç8038 ANCESTOR: total=4, value 0 = 37% ç8038 ANCESTOR: total=4, value 1 = 9u& ç8038 ANCESTOR: total=4, value 2 = 20) ç8038 ANCESTOR: total=4, value 3 = 185000, çRebuild index SUBJECT for Record 17456 ..., çRebuild index WEBSITE for Record 17456 ...- çRebuild index ISUBJECT for Record 17456 ... + çRebuild index SOURCE for Record 17457 ... & ç8038 ANCESTOR: total=4, value 0 = 37% ç8038 ANCESTOR: total=4, value 1 = 9a& ç8038 ANCESTOR: total=4, value 2 = 20) ç8038 ANCESTOR: total=4, value 3 = 18500 , çRebuild index SUBJECT for Record 17457 ...+ ç19850 ANCESTOR: total=10, value 0 = 26300S+ ç19850 ANCESTOR: total=10, value 1 = 26297 ( ç19850 ANCESTOR: total=10, value 2 = 88) ç19850 ANCESTOR: total=10, value 3 = 261:+ ç19850 ANCESTOR: total=10, value 4 = 27012l+ ç19850 ANCESTOR: total=10, value 5 = 26379 + ç19850 ANCESTOR: total=10, value 6 = 19848u) ç19850 ANCESTOR: total=10, value 7 = 187 ) ç19850 ANCESTOR: total=10, value 8 = 2636+ ç19850 ANCESTOR: total=10, value 9 = 26381 , çRebuild index WEBSITE for Record 17457 ...- çRebuild index ISUBJECT for Record 17457 ...O+ çRebuild index SOURCE for Record 17458 ...E& ç8038 ANCESTOR: total=4, value 0 = 37% ç8038 ANCESTOR: total=4, value 1 = 9e& ç8038 ANCESTOR: total=4, value 2 = 20) ç8038 ANCESTOR: total=4, value 3 = 18500ç, çRebu
