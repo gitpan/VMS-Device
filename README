@@ -1,6 +1,6 @@
 README for VMS::Device
 
-Copyright (c) 1998 Dan Sugalski <sugalskd@ous.edu>
+Copyright (c) 1998 Dan Sugalski <dan@sidhe.org>
 
 You may distribute under the terms of the Artistic License, as distributed
 with Perl.
@@ -22,7 +22,4 @@ This beta release is fully functional, but not thoroughly tested. It may
 well misbehave under some circumstances, leak memory, or die gracelessly
 when passed truly bogus parameters. Use with appropriate care.
 
-WHAT'S CHANGED IN THIS RELEASE:
-
-0.06: Fixed a C thinko (had && where I should have had &) which rendered
-      decode_device_bitmap useless.
+See Changes for history.

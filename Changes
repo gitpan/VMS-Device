@@ -52,3 +52,10 @@ Revision history for Perl extension VMS::Device.
 0.09  Sun Aug 20 15:30 2006
     - Fixed some memory leakage courtesy of Thomas Pfau.
     - First maintenance upload by Craig Berry taking over from Dan.
+
+0.10  Thu May 19 12:00 2011
+    - Added support for about a hundred new(er) item codes.
+    - Added ability to handle arbitrary-length bitmaps.
+    - Updated ppport.h.
+    - Changed #ifdef __ALPHA to #ifndef __VAX
+

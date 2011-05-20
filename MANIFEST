@@ -6,3 +6,4 @@ ppport.h
 README
 MANIFEST
 t/basic.t
+META.yml                                 Module meta-data (added by MakeMaker)
